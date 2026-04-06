@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 import httpx
 import structlog
@@ -31,8 +30,8 @@ class LettaConnector(BaseConnector):
     def __init__(self, config: dict) -> None:
         self.api_key: str = config["api_key"]
         self.base_url: str = config.get("base_url", LETTA_API_BASE)
-        self.agent_id: Optional[str] = config.get("agent_id")
-        self._client: Optional[httpx.AsyncClient] = None
+        self.agent_id: str | None = config.get("agent_id")
+        self._client: httpx.AsyncClient | None = None
 
     @property
     def client(self) -> httpx.AsyncClient:
@@ -63,7 +62,7 @@ class LettaConnector(BaseConnector):
         offset: int = 0,
         sort_by: str = "retrieval_count",
         sort_order: str = "desc",
-        filters: Optional[dict] = None,
+        filters: dict | None = None,
     ) -> list[MemoryItem]:
         """Fetch memories from Letta agents.
 
@@ -83,7 +82,7 @@ class LettaConnector(BaseConnector):
 
         return all_memories[offset:offset + limit]
 
-    async def fetch_memory_by_id(self, external_id: str) -> Optional[MemoryItem]:
+    async def fetch_memory_by_id(self, external_id: str) -> MemoryItem | None:
         """Fetch a memory by its external ID.
 
         IDs are formatted as:
@@ -255,7 +254,7 @@ class LettaConnector(BaseConnector):
         )
 
 
-def _parse_dt(value: Optional[str]) -> Optional[datetime]:
+def _parse_dt(value: str | None) -> datetime | None:
     if not value:
         return None
     try:

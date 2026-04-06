@@ -1,6 +1,5 @@
 import uuid
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy import DateTime, Float, ForeignKey, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
@@ -24,15 +23,15 @@ class QuarantineEntry(Base):
     reason: Mapped[str] = mapped_column(String(50), nullable=False)
     original_content: Mapped[str] = mapped_column(Text, nullable=False)
     original_trust_score: Mapped[float] = mapped_column(Float, nullable=False)
-    validation_result_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+    validation_result_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("validation_results.id"), nullable=True
     )
     remediation_status: Mapped[str] = mapped_column(
         String(20), default="pending", server_default="'pending'"
     )
-    remediated_content: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    remediated_by: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    remediated_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    remediated_content: Mapped[str | None] = mapped_column(Text, nullable=True)
+    remediated_by: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    remediated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

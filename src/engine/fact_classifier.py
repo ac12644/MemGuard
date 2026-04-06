@@ -1,5 +1,4 @@
 import re
-from typing import Optional
 
 import structlog
 
@@ -92,7 +91,7 @@ def classify_fact_type(content: str) -> tuple[str, float]:
     return best_type, round(confidence, 2)
 
 
-def get_fact_type_volatility(fact_type: Optional[str]) -> float:
+def get_fact_type_volatility(fact_type: str | None) -> float:
     """Return volatility score (0-1) for a fact type. Higher = changes faster."""
     staleness_days = DEFAULT_STALENESS_DAYS.get(fact_type or "other", 180)
     # Normalize: 30 days (most volatile) = 1.0, 730 days (least) = 0.0

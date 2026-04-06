@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
 
 
 @dataclass
@@ -11,15 +10,15 @@ class MemoryItem:
     external_id: str
     content: str
     metadata: dict
-    source_type: Optional[str] = None
-    source_url: Optional[str] = None
-    source_field: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-    retrieval_count: Optional[int] = None
+    source_type: str | None = None
+    source_url: str | None = None
+    source_field: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    retrieval_count: int | None = None
     tags: list[str] = field(default_factory=list)
-    user_id: Optional[str] = None
-    agent_id: Optional[str] = None
+    user_id: str | None = None
+    agent_id: str | None = None
 
 
 @dataclass
@@ -27,9 +26,9 @@ class MemoryUpdate:
     """Update to write back to the source memory system."""
 
     external_id: str
-    trust_score: Optional[float] = None
-    status: Optional[str] = None
-    metadata_updates: Optional[dict] = None
+    trust_score: float | None = None
+    status: str | None = None
+    metadata_updates: dict | None = None
 
 
 class BaseConnector(ABC):
@@ -47,13 +46,13 @@ class BaseConnector(ABC):
         offset: int = 0,
         sort_by: str = "retrieval_count",
         sort_order: str = "desc",
-        filters: Optional[dict] = None,
+        filters: dict | None = None,
     ) -> list[MemoryItem]:
         """Fetch memories from the source system."""
         ...
 
     @abstractmethod
-    async def fetch_memory_by_id(self, external_id: str) -> Optional[MemoryItem]:
+    async def fetch_memory_by_id(self, external_id: str) -> MemoryItem | None:
         """Fetch a single memory by its ID in the source system."""
         ...
 

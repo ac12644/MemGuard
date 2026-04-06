@@ -1,5 +1,6 @@
 import copy
 import uuid
+from datetime import UTC
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -155,7 +156,7 @@ async def sync_connector(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Sync memories from source into MemGuard. Runs inline for immediate results."""
-    from datetime import datetime, timezone
+    from datetime import datetime
 
     from src.engine.fact_classifier import classify_fact_type
     from src.models.memory_record import MemoryRecord
@@ -191,7 +192,7 @@ async def sync_connector(
         ))
         synced += 1
 
-    connector_config.last_sync_at = datetime.now(timezone.utc)
+    connector_config.last_sync_at = datetime.now(UTC)
     await db.flush()
     return {"status": "completed", "connector_id": str(connector_config.id), "synced": synced}
 

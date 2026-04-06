@@ -1,6 +1,5 @@
 import math
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 import structlog
 
@@ -15,10 +14,10 @@ MIN_SAMPLE_SIZE = 20
 async def validate_temporal_pattern(
     memory_content: str,
     memory_created_at: datetime,
-    fact_type: Optional[str],
-    learned_avg_staleness_days: Optional[float] = None,
+    fact_type: str | None,
+    learned_avg_staleness_days: float | None = None,
     learned_sample_size: int = 0,
-    last_validated_at: Optional[datetime] = None,
+    last_validated_at: datetime | None = None,
 ) -> dict:
     """Predict whether a memory is likely stale based on its fact-type and age
     using an exponential decay model.
@@ -63,12 +62,12 @@ async def validate_temporal_pattern(
 async def _compute(
     memory_content: str,
     memory_created_at: datetime,
-    fact_type: Optional[str],
-    learned_avg_staleness_days: Optional[float],
+    fact_type: str | None,
+    learned_avg_staleness_days: float | None,
     learned_sample_size: int,
-    last_validated_at: Optional[datetime],
+    last_validated_at: datetime | None,
 ) -> dict:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     # Determine the reference point for age calculation.  If the memory was
     # recently validated successfully, measure from that point instead of
@@ -151,7 +150,7 @@ async def _compute(
 def _result(
     outcome: str = "error",
     staleness_probability: float = 0.0,
-    predicted_days_until_stale: Optional[float] = None,
+    predicted_days_until_stale: float | None = None,
     confidence: float = 0.5,
     reasoning: str = "",
 ) -> dict:

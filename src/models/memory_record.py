@@ -1,6 +1,5 @@
 import uuid
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy import DateTime, Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB, UUID
@@ -27,13 +26,13 @@ class MemoryRecord(BaseModel):
     )
     external_id: Mapped[str] = mapped_column(String(500), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
-    fact_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    fact_type: Mapped[str | None] = mapped_column(String(100), nullable=True)
     source_metadata: Mapped[dict] = mapped_column(JSONB, server_default="{}", default=dict)
     retrieval_count: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
-    last_retrieved_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_retrieved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     trust_score: Mapped[float] = mapped_column(Float, default=1.0, server_default="1.0")
     status: Mapped[str] = mapped_column(String(20), default="active", server_default="'active'")
-    last_validated_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_validated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     validation_count: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
     tenant = relationship("Tenant", back_populates="memory_records")

@@ -18,7 +18,9 @@ structlog.configure(
         structlog.contextvars.merge_contextvars,
         structlog.processors.add_log_level,
         structlog.processors.StackInfoRenderer(),
-        structlog.dev.ConsoleRenderer() if settings.memguard_env == "development" else structlog.processors.JSONRenderer(),
+        structlog.dev.ConsoleRenderer()
+        if settings.memguard_env == "development"
+        else structlog.processors.JSONRenderer(),
     ],
     wrapper_class=structlog.make_filtering_bound_logger(0),
     context_class=dict,

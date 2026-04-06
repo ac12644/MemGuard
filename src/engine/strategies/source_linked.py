@@ -1,4 +1,3 @@
-from typing import Optional
 
 import httpx
 import structlog
@@ -14,8 +13,8 @@ rate_limiter = RateLimiter(max_per_second=settings.memguard_source_rate_limit_pe
 async def validate_source_linked(
     memory_content: str,
     source_url: str,
-    source_field: Optional[str] = None,
-    auth_headers: Optional[dict] = None,
+    source_field: str | None = None,
+    auth_headers: dict | None = None,
 ) -> dict:
     """Re-fetch the original source and compare against stored memory.
 
@@ -97,7 +96,7 @@ async def validate_source_linked(
 def _result(
     outcome: str,
     stored_value: str,
-    source_value: Optional[str] = None,
+    source_value: str | None = None,
     drift_detected: bool = False,
     confidence: float = 0.5,
     reasoning: str = "",

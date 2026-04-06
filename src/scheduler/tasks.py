@@ -1,5 +1,6 @@
 import asyncio
 import uuid
+from datetime import UTC
 
 from celery import Celery
 from celery.schedules import crontab
@@ -49,7 +50,7 @@ def _run_async(coro):
 @app.task(name="src.scheduler.tasks.run_validation_sweep")
 def run_validation_sweep(strategy: str = "source_linked", max_age_days: int = 7) -> dict:
     """Full sweep: validate memories not checked in max_age_days."""
-    from datetime import datetime, timedelta, timezone
+    from datetime import datetime, timedelta
 
     from sqlalchemy import select
 
@@ -61,7 +62,7 @@ def run_validation_sweep(strategy: str = "source_linked", max_age_days: int = 7)
     async def _sweep():
         async with async_session_factory() as db:
             # Find tenants with active memories
-            cutoff = datetime.now(timezone.utc) - timedelta(days=max_age_days)
+            cutoff = datetime.now(UTC) - timedelta(days=max_age_days)
             result = await db.execute(
                 select(MemoryRecord.tenant_id)
                 .where(
@@ -141,7 +142,7 @@ def run_priority_validation(top_n: int = 50, strategy: str = "source_linked") ->
 @app.task(name="src.scheduler.tasks.update_staleness_patterns")
 def update_staleness_patterns() -> dict:
     """Recalculate staleness patterns from validation history."""
-    from datetime import datetime, timezone
+    from datetime import datetime
 
     from sqlalchemy import func, select
 
@@ -182,14 +183,14 @@ def update_staleness_patterns() -> dict:
                 if pattern:
                     pattern.avg_staleness_days = float(avg_days) if avg_days else None
                     pattern.sample_size = sample_size
-                    pattern.last_computed_at = datetime.now(timezone.utc)
+                    pattern.last_computed_at = datetime.now(UTC)
                 else:
                     db.add(StalenessPattern(
                         tenant_id=tenant_id,
                         fact_type=fact_type,
                         avg_staleness_days=float(avg_days) if avg_days else None,
                         sample_size=sample_size,
-                        last_computed_at=datetime.now(timezone.utc),
+                        last_computed_at=datetime.now(UTC),
                     ))
                 updated += 1
 
@@ -257,8 +258,8 @@ def sync_all_connectors() -> dict:
                             ))
                             total_synced += 1
 
-                    from datetime import datetime, timezone
-                    config.last_sync_at = datetime.now(timezone.utc)
+                    from datetime import datetime
+                    config.last_sync_at = datetime.now(UTC)
                 except Exception as e:
                     from structlog import get_logger
                     get_logger().error("connector_sync_failed", connector_id=str(config.id), error=str(e))

@@ -1,9 +1,7 @@
 import uuid
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, Field
-
 
 # --- Connector schemas ---
 
@@ -14,9 +12,9 @@ class ConnectorConfigCreate(BaseModel):
 
 
 class ConnectorConfigUpdate(BaseModel):
-    name: Optional[str] = Field(None, max_length=255)
-    config: Optional[dict] = None
-    is_active: Optional[bool] = None
+    name: str | None = Field(None, max_length=255)
+    config: dict | None = None
+    is_active: bool | None = None
 
 
 class ConnectorConfigResponse(BaseModel):
@@ -26,7 +24,7 @@ class ConnectorConfigResponse(BaseModel):
     name: str
     config: dict
     is_active: bool
-    last_sync_at: Optional[datetime] = None
+    last_sync_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -35,8 +33,8 @@ class ConnectorConfigResponse(BaseModel):
 
 class ConnectorTestResponse(BaseModel):
     connected: bool
-    memory_count: Optional[int] = None
-    error: Optional[str] = None
+    memory_count: int | None = None
+    error: str | None = None
 
 
 # --- Memory schemas ---
@@ -46,12 +44,12 @@ class MemoryRecordResponse(BaseModel):
     connector_id: uuid.UUID
     external_id: str
     content: str
-    fact_type: Optional[str] = None
+    fact_type: str | None = None
     source_metadata: dict
     retrieval_count: int
     trust_score: float
     status: str
-    last_validated_at: Optional[datetime] = None
+    last_validated_at: datetime | None = None
     validation_count: int
     created_at: datetime
     updated_at: datetime
@@ -72,8 +70,8 @@ class MemoryStatsResponse(BaseModel):
 # --- Validation schemas ---
 
 class ValidationJobCreate(BaseModel):
-    connector_id: Optional[uuid.UUID] = None
-    job_type: str = Field(..., description="source_linked, cross_reference, semantic_drift, temporal_pattern, full_sweep")
+    connector_id: uuid.UUID | None = None
+    job_type: str = Field(..., description="source_linked, cross_reference, semantic_drift, temporal_pattern")
     priority: int = Field(default=5, ge=1, le=10)
     config: dict = Field(default_factory=dict)
 
@@ -81,7 +79,7 @@ class ValidationJobCreate(BaseModel):
 class ValidationJobResponse(BaseModel):
     id: uuid.UUID
     tenant_id: uuid.UUID
-    connector_id: Optional[uuid.UUID] = None
+    connector_id: uuid.UUID | None = None
     job_type: str
     status: str
     priority: int
@@ -90,9 +88,9 @@ class ValidationJobResponse(BaseModel):
     validated_count: int
     flagged_count: int
     quarantined_count: int
-    error_message: Optional[str] = None
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
+    error_message: str | None = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -103,8 +101,8 @@ class ValidationResultResponse(BaseModel):
     job_id: uuid.UUID
     memory_id: uuid.UUID
     strategy: str
-    previous_trust_score: Optional[float] = None
-    new_trust_score: Optional[float] = None
+    previous_trust_score: float | None = None
+    new_trust_score: float | None = None
     outcome: str
     evidence: dict
     created_at: datetime
@@ -121,9 +119,9 @@ class QuarantineEntryResponse(BaseModel):
     original_content: str
     original_trust_score: float
     remediation_status: str
-    remediated_content: Optional[str] = None
-    remediated_by: Optional[str] = None
-    remediated_at: Optional[datetime] = None
+    remediated_content: str | None = None
+    remediated_by: str | None = None
+    remediated_at: datetime | None = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -134,8 +132,8 @@ class QuarantineEntryResponse(BaseModel):
 class AuditLogResponse(BaseModel):
     id: uuid.UUID
     event_type: str
-    memory_id: Optional[uuid.UUID] = None
-    actor: Optional[str] = None
+    memory_id: uuid.UUID | None = None
+    actor: str | None = None
     details: dict
     checksum: str
     created_at: datetime
@@ -152,13 +150,13 @@ class HealthScoreResponse(BaseModel):
     flagged_count: int
     quarantined_count: int
     avg_trust_score: float
-    oldest_unvalidated_days: Optional[int] = None
+    oldest_unvalidated_days: int | None = None
 
 
 class StalenessHeatmapEntry(BaseModel):
     fact_type: str
-    avg_staleness_days: Optional[float] = None
-    staleness_rate: Optional[float] = None
+    avg_staleness_days: float | None = None
+    staleness_rate: float | None = None
     sample_size: int
 
 

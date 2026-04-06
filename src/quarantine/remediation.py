@@ -3,9 +3,7 @@ import uuid
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.connectors.registry import get_connector
 from src.engine.strategies.source_linked import validate_source_linked
-from src.models.connector_config import ConnectorConfig
 from src.models.memory_record import MemoryRecord
 from src.models.quarantine_entry import QuarantineEntry
 from src.quarantine.manager import auto_remediate

@@ -1,6 +1,5 @@
 import uuid
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB, UUID
@@ -19,7 +18,7 @@ class ConnectorConfig(BaseModel):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     config: Mapped[dict] = mapped_column(JSONB, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
-    last_sync_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_sync_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     tenant = relationship("Tenant", back_populates="connector_configs")
     memory_records = relationship("MemoryRecord", back_populates="connector", cascade="all, delete-orphan")

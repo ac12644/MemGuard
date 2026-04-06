@@ -6,8 +6,8 @@ Requires: docker-compose up postgres redis && uvicorn running.
 
 import uuid
 
-import pytest
 import httpx
+import pytest
 
 BASE = "http://localhost:8001"
 

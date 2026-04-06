@@ -1,6 +1,5 @@
 import uuid
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy import DateTime, Float, ForeignKey, Index, String, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
@@ -26,8 +25,8 @@ class ValidationResult(Base):
         UUID(as_uuid=True), ForeignKey("memory_records.id", ondelete="CASCADE"), nullable=False
     )
     strategy: Mapped[str] = mapped_column(String(50), nullable=False)
-    previous_trust_score: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    new_trust_score: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    previous_trust_score: Mapped[float | None] = mapped_column(Float, nullable=True)
+    new_trust_score: Mapped[float | None] = mapped_column(Float, nullable=True)
     outcome: Mapped[str] = mapped_column(String(20), nullable=False)
     evidence: Mapped[dict] = mapped_column(JSONB, server_default="{}", default=dict)
     created_at: Mapped[datetime] = mapped_column(

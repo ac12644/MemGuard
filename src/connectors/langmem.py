@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 import httpx
 import structlog
@@ -33,8 +32,8 @@ class LangMemConnector(BaseConnector):
         self.api_key: str = config["api_key"]
         self.base_url: str = config.get("base_url", LANGGRAPH_API_BASE)
         self.namespace: list[str] = config.get("namespace", ["memories"])
-        self.assistant_id: Optional[str] = config.get("assistant_id")
-        self._client: Optional[httpx.AsyncClient] = None
+        self.assistant_id: str | None = config.get("assistant_id")
+        self._client: httpx.AsyncClient | None = None
 
     @property
     def client(self) -> httpx.AsyncClient:
@@ -84,7 +83,7 @@ class LangMemConnector(BaseConnector):
         offset: int = 0,
         sort_by: str = "retrieval_count",
         sort_order: str = "desc",
-        filters: Optional[dict] = None,
+        filters: dict | None = None,
     ) -> list[MemoryItem]:
         """Fetch memories from LangGraph Store via search."""
         try:
@@ -105,7 +104,7 @@ class LangMemConnector(BaseConnector):
             # Fallback: try listing items
             return await self._list_items(limit, offset)
 
-    async def fetch_memory_by_id(self, external_id: str) -> Optional[MemoryItem]:
+    async def fetch_memory_by_id(self, external_id: str) -> MemoryItem | None:
         """Fetch a single memory by key."""
         try:
             resp = await self.client.post("/store/get", json={
@@ -233,7 +232,7 @@ class LangMemConnector(BaseConnector):
         )
 
 
-def _parse_dt(value: Optional[str]) -> Optional[datetime]:
+def _parse_dt(value: str | None) -> datetime | None:
     if not value:
         return None
     try:

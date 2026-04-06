@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
@@ -48,7 +48,7 @@ async def restore_memory(
         memory.trust_score = entry.original_trust_score
     entry.remediation_status = "restored"
     entry.remediated_by = "human:api"
-    entry.remediated_at = datetime.now(timezone.utc)
+    entry.remediated_at = datetime.now(UTC)
     await emit_audit_event(
         tenant.id, "memory_restored", db,
         memory_id=entry.memory_id, actor="api:user",
@@ -75,7 +75,7 @@ async def approve_remediation(
         memory.trust_score = 0.8
     entry.remediation_status = "human_approved"
     entry.remediated_by = "human:api"
-    entry.remediated_at = datetime.now(timezone.utc)
+    entry.remediated_at = datetime.now(UTC)
     await db.flush()
     return {"status": "approved", "memory_id": str(entry.memory_id)}
 

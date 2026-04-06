@@ -1,6 +1,5 @@
 import json
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 import anthropic
 import structlog
@@ -50,7 +49,7 @@ async def validate_semantic_drift(
             reasoning="No recent context available to check against; assuming still valid",
         )
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     days_ago = max(0, (now - memory_created_at).days)
     context_summary = "\n---\n".join(recent_context[:20])  # Cap context length
 
@@ -120,14 +119,14 @@ async def validate_semantic_drift(
     }
 
 
-def _parse_llm_response(text: str) -> Optional[dict]:
+def _parse_llm_response(text: str) -> dict | None:
     """Extract JSON from the LLM response text, tolerating markdown fences."""
     text = text.strip()
 
     # Strip markdown code fences if present
     if text.startswith("```"):
         lines = text.split("\n")
-        lines = [l for l in lines if not l.strip().startswith("```")]
+        lines = [line for line in lines if not line.strip().startswith("```")]
         text = "\n".join(lines).strip()
 
     try:

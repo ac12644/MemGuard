@@ -2,7 +2,6 @@ import base64
 import hashlib
 import json
 import os
-from typing import Optional
 
 from src.config import settings
 
@@ -17,7 +16,7 @@ def compute_audit_checksum(previous_checksum: str, event_data: dict) -> str:
     return hashlib.sha256(payload.encode()).hexdigest()
 
 
-def verify_audit_chain(audit_entries: list) -> tuple[bool, Optional[int]]:
+def verify_audit_chain(audit_entries: list) -> tuple[bool, int | None]:
     """Verify the entire audit chain. Returns (is_valid, first_broken_index)."""
     for i, entry in enumerate(audit_entries):
         expected_prev = "GENESIS" if i == 0 else audit_entries[i - 1].checksum

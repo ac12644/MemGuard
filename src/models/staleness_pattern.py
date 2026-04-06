@@ -1,6 +1,5 @@
 import uuid
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import UUID
@@ -22,10 +21,10 @@ class StalenessPattern(Base):
         UUID(as_uuid=True), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False
     )
     fact_type: Mapped[str] = mapped_column(String(100), nullable=False)
-    avg_staleness_days: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    staleness_rate: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    avg_staleness_days: Mapped[float | None] = mapped_column(Float, nullable=True)
+    staleness_rate: Mapped[float | None] = mapped_column(Float, nullable=True)
     sample_size: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
-    last_computed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_computed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

@@ -1,5 +1,4 @@
 import json
-from typing import Optional
 
 import anthropic
 import structlog
@@ -160,7 +159,7 @@ async def _check_dependency(
     client: anthropic.AsyncAnthropic,
     memory_a_content: str,
     candidate: dict,
-) -> Optional[dict]:
+) -> dict | None:
     """Use the LLM to assess whether ``candidate`` depends on ``memory_a_content``."""
     prompt = DEPENDENCY_PROMPT.format(
         memory_a=memory_a_content,
@@ -187,13 +186,13 @@ async def _check_dependency(
     return _parse_llm_response(raw_text)
 
 
-def _parse_llm_response(text: str) -> Optional[dict]:
+def _parse_llm_response(text: str) -> dict | None:
     """Extract JSON from the LLM response, tolerating markdown fences."""
     text = text.strip()
 
     if text.startswith("```"):
         lines = text.split("\n")
-        lines = [l for l in lines if not l.strip().startswith("```")]
+        lines = [line for line in lines if not line.strip().startswith("```")]
         text = "\n".join(lines).strip()
 
     try:
@@ -258,8 +257,8 @@ def _heuristic_only(
 
 def _result(
     outcome: str = "error",
-    dependencies_found: Optional[list[dict]] = None,
-    cascaded_flags: Optional[list[str]] = None,
+    dependencies_found: list[dict] | None = None,
+    cascaded_flags: list[str] | None = None,
     confidence: float = 0.5,
     reasoning: str = "",
 ) -> dict:

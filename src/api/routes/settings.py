@@ -116,4 +116,5 @@ async def set_anthropic_key(
     current["anthropic_key_set"] = True
     tenant.settings = current
     await db.flush()
-    return {"status": "saved", "message": "Anthropic key configured. Semantic Drift and Causal Chain strategies are now available."}
+    msg = "Anthropic key configured. Semantic Drift and Causal Chain strategies are now available."
+    return {"status": "saved", "message": msg}

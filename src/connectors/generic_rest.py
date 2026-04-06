@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 import structlog
@@ -45,7 +45,7 @@ class GenericRESTConnector(BaseConnector):
             "updated_at": "updated_at",
             "metadata": "metadata",
         })
-        self._client: Optional[httpx.AsyncClient] = None
+        self._client: httpx.AsyncClient | None = None
 
     @property
     def client(self) -> httpx.AsyncClient:
@@ -76,7 +76,7 @@ class GenericRESTConnector(BaseConnector):
         offset: int = 0,
         sort_by: str = "retrieval_count",
         sort_order: str = "desc",
-        filters: Optional[dict] = None,
+        filters: dict | None = None,
     ) -> list[MemoryItem]:
         ep = self.endpoints.get("list", {"method": "GET", "path": "/memories"})
         params: dict = {"limit": limit, "offset": offset}
@@ -94,7 +94,7 @@ class GenericRESTConnector(BaseConnector):
 
         return [self._to_memory_item(m) for m in items]
 
-    async def fetch_memory_by_id(self, external_id: str) -> Optional[MemoryItem]:
+    async def fetch_memory_by_id(self, external_id: str) -> MemoryItem | None:
         ep = self.endpoints.get("get", {"method": "GET", "path": "/memories/{id}"})
         path = ep["path"].replace("{id}", external_id)
         try:
@@ -168,7 +168,7 @@ def _extract(data: dict, key: str, default: Any = None) -> Any:
     return current
 
 
-def _parse_dt(value: Optional[str]) -> Optional[datetime]:
+def _parse_dt(value: str | None) -> datetime | None:
     if not value:
         return None
     try:

@@ -1,5 +1,4 @@
 import uuid
-from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import select
@@ -16,8 +15,8 @@ router = APIRouter(prefix="/api/v1/audit", tags=["audit"])
 
 @router.get("", response_model=list[AuditLogResponse])
 async def list_audit_logs(
-    event_type: Optional[str] = Query(None),
-    memory_id: Optional[uuid.UUID] = Query(None),
+    event_type: str | None = Query(None),
+    memory_id: uuid.UUID | None = Query(None),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     tenant: Tenant = Depends(get_tenant),

@@ -1,8 +1,7 @@
+import structlog
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
-
-import structlog
 
 logger = structlog.get_logger()
 

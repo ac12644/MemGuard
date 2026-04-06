@@ -7,16 +7,16 @@ memory trustworthiness before acting on stored facts.
 
 import asyncio
 import uuid
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 
-from mcp.server import Server
 from mcp.server.stdio import stdio_server
 from mcp.types import TextContent, Tool
 from sqlalchemy import func, select
 
+from mcp.server import Server
 from src.api.deps import async_session_factory
-from src.models import MemoryRecord, QuarantineEntry, ValidationJob, ValidationResult
+from src.models import MemoryRecord, ValidationJob, ValidationResult
 
 # Hardcoded tenant ID for single-tenant mode.
 # TODO: Replace with proper tenant resolution from MCP auth context.
@@ -25,7 +25,7 @@ DEFAULT_TENANT_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
 server = Server("memguard")
 
 
-def _isoformat(dt: Optional[datetime]) -> Optional[str]:
+def _isoformat(dt: datetime | None) -> str | None:
     """Convert a datetime to ISO 8601 string, or return None."""
     return dt.isoformat() if dt else None
 
@@ -248,7 +248,7 @@ async def _handle_get_memory_health(arguments: dict[str, Any]) -> dict[str, Any]
         Dict with total_memories, verified_pct, flagged_count, quarantined_count,
         avg_trust_score, and oldest_unvalidated_days.
     """
-    connector_id: Optional[uuid.UUID] = None
+    connector_id: uuid.UUID | None = None
     if arguments.get("connector_id"):
         connector_id = uuid.UUID(arguments["connector_id"])
 
@@ -280,7 +280,6 @@ async def _handle_get_memory_health(arguments: dict[str, Any]) -> dict[str, Any]
         status_rows = (await session.execute(status_stmt)).all()
         status_counts: dict[str, int] = {row[0]: row[1] for row in status_rows}
 
-        active_count = status_counts.get("active", 0)
         flagged_count = status_counts.get("flagged", 0)
         quarantined_count = status_counts.get("quarantined", 0)
 
@@ -298,12 +297,12 @@ async def _handle_get_memory_health(arguments: dict[str, Any]) -> dict[str, Any]
         avg_trust: float = (await session.execute(avg_stmt)).scalar_one() or 0.0
 
         # Oldest unvalidated memory (days since last_validated_at, or since created_at if never validated).
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         oldest_stmt = (
             select(func.min(func.coalesce(MemoryRecord.last_validated_at, MemoryRecord.created_at)))
             .where(*base_filter)
         )
-        oldest_dt: Optional[datetime] = (await session.execute(oldest_stmt)).scalar_one()
+        oldest_dt: datetime | None = (await session.execute(oldest_stmt)).scalar_one()
         oldest_unvalidated_days = (now - oldest_dt).days if oldest_dt else 0
 
         return {
@@ -337,7 +336,7 @@ async def _handle_report_stale_memory(arguments: dict[str, Any]) -> dict[str, An
         raise ValueError("reason is required")
 
     memory_id = uuid.UUID(memory_id_str)
-    contradicting_evidence: Optional[str] = arguments.get("contradicting_evidence")
+    contradicting_evidence: str | None = arguments.get("contradicting_evidence")
 
     async with async_session_factory() as session:
         stmt = select(MemoryRecord).where(

@@ -1,5 +1,4 @@
 import uuid
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func, select
@@ -16,10 +15,10 @@ router = APIRouter(prefix="/api/v1/memories", tags=["memories"])
 
 @router.get("", response_model=list[MemoryRecordResponse])
 async def list_memories(
-    status: Optional[str] = Query(None),
-    fact_type: Optional[str] = Query(None),
-    min_trust: Optional[float] = Query(None, ge=0.0, le=1.0),
-    max_trust: Optional[float] = Query(None, ge=0.0, le=1.0),
+    status: str | None = Query(None),
+    fact_type: str | None = Query(None),
+    min_trust: float | None = Query(None, ge=0.0, le=1.0),
+    max_trust: float | None = Query(None, ge=0.0, le=1.0),
     sort_by: str = Query("trust_score", pattern="^(trust_score|retrieval_count|created_at|last_validated_at)$"),
     sort_order: str = Query("asc", pattern="^(asc|desc)$"),
     limit: int = Query(50, ge=1, le=200),

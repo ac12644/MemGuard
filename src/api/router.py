@@ -1,6 +1,17 @@
 from fastapi import APIRouter
 
-from src.api.routes import analytics, audit, auth, connectors, health, memories, quarantine, settings, validation, webhooks
+from src.api.routes import (
+    analytics,
+    audit,
+    auth,
+    connectors,
+    health,
+    memories,
+    quarantine,
+    settings,
+    validation,
+    webhooks,
+)
 
 api_router = APIRouter()
 api_router.include_router(health.router)

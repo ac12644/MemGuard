@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import MagicMock
 
 from src.scheduler.prioritizer import calculate_validation_priority
@@ -21,7 +21,7 @@ class TestValidationPrioritizer:
         assert calculate_validation_priority(high) > calculate_validation_priority(low)
 
     def test_never_validated_higher_priority(self):
-        validated = _make_memory(last_validated_at=datetime.now(timezone.utc))
+        validated = _make_memory(last_validated_at=datetime.now(UTC))
         never = _make_memory(last_validated_at=None)
         assert calculate_validation_priority(never) > calculate_validation_priority(validated)
 

@@ -1,14 +1,12 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import structlog
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.config import settings
 from src.models.memory_record import MemoryRecord
 from src.models.quarantine_entry import QuarantineEntry
-from src.utils.crypto import compute_audit_checksum
 
 logger = structlog.get_logger()
 
@@ -55,7 +53,7 @@ async def restore_memory(entry_id: uuid.UUID, db: AsyncSession) -> bool:
 
     entry.remediation_status = "restored"
     entry.remediated_by = "system"
-    entry.remediated_at = datetime.now(timezone.utc)
+    entry.remediated_at = datetime.now(UTC)
     await db.flush()
 
     logger.info("memory_restored", memory_id=str(entry.memory_id))
@@ -75,7 +73,7 @@ async def auto_remediate(
     entry.remediated_content = new_content
     entry.remediation_status = "auto_updated"
     entry.remediated_by = "auto"
-    entry.remediated_at = datetime.now(timezone.utc)
+    entry.remediated_at = datetime.now(UTC)
     await db.flush()
 
     logger.info("memory_auto_remediated", memory_id=str(entry.memory_id))

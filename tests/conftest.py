@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock
 
 import pytest
@@ -16,8 +16,8 @@ def sample_memory_item():
         source_type="api",
         source_url="https://api.example.com/employees/123",
         source_field="title",
-        created_at=datetime(2025, 1, 1, tzinfo=timezone.utc),
-        updated_at=datetime(2025, 6, 1, tzinfo=timezone.utc),
+        created_at=datetime(2025, 1, 1, tzinfo=UTC),
+        updated_at=datetime(2025, 6, 1, tzinfo=UTC),
         retrieval_count=42,
         tags=["employee", "role"],
         user_id="user-001",

@@ -1,5 +1,4 @@
 import uuid
-from typing import Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,9 +11,9 @@ async def emit_audit_event(
     tenant_id: uuid.UUID,
     event_type: str,
     db: AsyncSession,
-    memory_id: Optional[uuid.UUID] = None,
+    memory_id: uuid.UUID | None = None,
     actor: str = "system",
-    details: Optional[dict] = None,
+    details: dict | None = None,
 ) -> AuditLog:
     """Write an audit log entry with chained checksum."""
     # Get the last checksum for this tenant

@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 import httpx
 import structlog
@@ -28,9 +27,9 @@ class ZepConnector(BaseConnector):
     def __init__(self, config: dict) -> None:
         self.api_key: str = config["api_key"]
         self.base_url: str = config.get("base_url", ZEP_API_BASE)
-        self.user_id: Optional[str] = config.get("user_id")
-        self.group_id: Optional[str] = config.get("group_id")
-        self._client: Optional[httpx.AsyncClient] = None
+        self.user_id: str | None = config.get("user_id")
+        self.group_id: str | None = config.get("group_id")
+        self._client: httpx.AsyncClient | None = None
 
     @property
     def client(self) -> httpx.AsyncClient:
@@ -61,7 +60,7 @@ class ZepConnector(BaseConnector):
         offset: int = 0,
         sort_by: str = "retrieval_count",
         sort_order: str = "desc",
-        filters: Optional[dict] = None,
+        filters: dict | None = None,
     ) -> list[MemoryItem]:
         """Fetch facts from Zep's knowledge graph via search.
 
@@ -76,7 +75,7 @@ class ZepConnector(BaseConnector):
         # Fallback: fetch threads and extract content
         return await self._fetch_from_threads(limit, offset)
 
-    async def fetch_memory_by_id(self, external_id: str) -> Optional[MemoryItem]:
+    async def fetch_memory_by_id(self, external_id: str) -> MemoryItem | None:
         """Fetch a single fact by searching for it."""
         # Zep doesn't have a direct get-by-id for edges in the public API,
         # so we search for it
@@ -209,7 +208,7 @@ class ZepConnector(BaseConnector):
         )
 
 
-def _parse_dt(value: Optional[str]) -> Optional[datetime]:
+def _parse_dt(value: str | None) -> datetime | None:
     if not value:
         return None
     try:

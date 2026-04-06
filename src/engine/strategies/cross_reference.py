@@ -1,4 +1,3 @@
-from typing import Optional
 from urllib.parse import urlparse
 
 import httpx
@@ -39,9 +38,9 @@ CROSS_REFERENCE_SOURCES: dict[str, list[dict]] = {
 
 async def validate_cross_reference(
     memory_content: str,
-    fact_type: Optional[str] = None,
-    custom_sources: Optional[list[dict]] = None,
-    auth_headers: Optional[dict] = None,
+    fact_type: str | None = None,
+    custom_sources: list[dict] | None = None,
+    auth_headers: dict | None = None,
 ) -> dict:
     """Verify a memory by querying multiple independent sources and checking
     agreement.
@@ -140,7 +139,7 @@ async def validate_cross_reference(
 async def _query_source(
     source: dict,
     memory_content: str,
-    auth_headers: Optional[dict],
+    auth_headers: dict | None,
 ) -> dict:
     """Fetch a single cross-reference source and compare with memory content."""
     name = source.get("name", "unknown")
@@ -244,9 +243,9 @@ def _url_encode(text: str) -> str:
 
 def _result(
     outcome: str = "error",
-    sources_checked: Optional[list[str]] = None,
+    sources_checked: list[str] | None = None,
     agreement_ratio: float = 0.0,
-    contradicting_sources: Optional[list[str]] = None,
+    contradicting_sources: list[str] | None = None,
     confidence: float = 0.5,
     reasoning: str = "",
 ) -> dict:

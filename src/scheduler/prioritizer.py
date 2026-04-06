@@ -1,5 +1,4 @@
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from src.engine.fact_classifier import get_fact_type_volatility
 from src.models.memory_record import MemoryRecord
@@ -37,8 +36,8 @@ def calculate_validation_priority(memory: MemoryRecord) -> float:
     return round(priority, 4)
 
 
-def _hours_since(dt: Optional[datetime]) -> float:
+def _hours_since(dt: datetime | None) -> float:
     if dt is None:
         return 720.0  # Default to 30 days if never validated
-    delta = datetime.now(timezone.utc) - dt.replace(tzinfo=timezone.utc) if dt.tzinfo is None else datetime.now(timezone.utc) - dt
+    delta = datetime.now(UTC) - dt.replace(tzinfo=UTC) if dt.tzinfo is None else datetime.now(UTC) - dt
     return max(0.0, delta.total_seconds() / 3600)

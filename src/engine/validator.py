@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import structlog
 from sqlalchemy import select
@@ -25,7 +25,7 @@ async def run_validation_job(job_id: uuid.UUID, db: AsyncSession) -> None:
         return
 
     job.status = "running"
-    job.started_at = datetime.now(timezone.utc)
+    job.started_at = datetime.now(UTC)
     await db.flush()
 
     try:
@@ -51,7 +51,7 @@ async def run_validation_job(job_id: uuid.UUID, db: AsyncSession) -> None:
                 # Update trust score
                 new_trust = _compute_new_trust(memory, evidence)
                 memory.trust_score = new_trust
-                memory.last_validated_at = datetime.now(timezone.utc)
+                memory.last_validated_at = datetime.now(UTC)
                 memory.validation_count += 1
 
                 # Classify fact type if not set
@@ -106,7 +106,7 @@ async def run_validation_job(job_id: uuid.UUID, db: AsyncSession) -> None:
 
         job.status = "completed"
         job.progress = 1.0
-        job.completed_at = datetime.now(timezone.utc)
+        job.completed_at = datetime.now(UTC)
 
     except Exception as e:
         logger.error("validation_job_failed", job_id=str(job_id), error=str(e))

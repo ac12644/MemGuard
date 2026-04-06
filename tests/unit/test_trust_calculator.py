@@ -1,4 +1,3 @@
-import math
 
 from src.engine.trust_calculator import calculate_trust_score
 

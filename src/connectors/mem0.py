@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 import httpx
 import structlog
@@ -24,9 +23,9 @@ class Mem0Connector(BaseConnector):
     def __init__(self, config: dict) -> None:
         self.api_key: str = config["api_key"]
         self.base_url: str = config.get("base_url", MEM0_API_BASE)
-        self.user_id: Optional[str] = config.get("user_id")
-        self.agent_id: Optional[str] = config.get("agent_id")
-        self._client: Optional[httpx.AsyncClient] = None
+        self.user_id: str | None = config.get("user_id")
+        self.agent_id: str | None = config.get("agent_id")
+        self._client: httpx.AsyncClient | None = None
 
     def _require_filter(self) -> dict:
         """Mem0 requires at least one of: user_id, agent_id, app_id, run_id."""
@@ -66,7 +65,7 @@ class Mem0Connector(BaseConnector):
         offset: int = 0,
         sort_by: str = "retrieval_count",
         sort_order: str = "desc",
-        filters: Optional[dict] = None,
+        filters: dict | None = None,
     ) -> list[MemoryItem]:
         """Fetch memories from Mem0 API."""
         params = self._require_filter()
@@ -80,7 +79,7 @@ class Mem0Connector(BaseConnector):
         # Apply limit/offset client-side (Mem0 API returns all)
         return [self._to_memory_item(m) for m in memories[offset:offset + limit]]
 
-    async def fetch_memory_by_id(self, external_id: str) -> Optional[MemoryItem]:
+    async def fetch_memory_by_id(self, external_id: str) -> MemoryItem | None:
         """Fetch a single memory by ID."""
         try:
             resp = await self.client.get(f"/memories/{external_id}/")
@@ -146,7 +145,7 @@ class Mem0Connector(BaseConnector):
         )
 
 
-def _parse_dt(value: Optional[str]) -> Optional[datetime]:
+def _parse_dt(value: str | None) -> datetime | None:
     if not value:
         return None
     try:

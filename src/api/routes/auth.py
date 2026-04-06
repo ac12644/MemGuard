@@ -6,7 +6,6 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.deps import get_db, hash_api_key
-
 from src.models.tenant import Tenant
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
