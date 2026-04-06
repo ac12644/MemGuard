@@ -75,7 +75,7 @@ MemGuard sits **beside** your memory system (Mem0, Zep, Letta, LangMem, or any R
 ### One command with Docker
 
 ```bash
-git clone https://github.com/yourusername/memguard.git
+git clone https://github.com/ac12644/MemGuard.git
 cd memguard
 docker-compose up
 ```
