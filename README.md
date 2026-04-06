@@ -26,6 +26,10 @@
 
 ---
 
+<p align="center">
+  <img src="docs/screenshots/screenshot-6.png" alt="Dashboard" width="800" />
+</p>
+
 ## Why MemGuard?
 
 AI agents store facts in memory systems &mdash; a user's job title, a product's price, a company's address. These facts go stale silently. The agent keeps using them with high confidence, delivering **wrong answers without any warning**.
@@ -33,6 +37,38 @@ AI agents store facts in memory systems &mdash; a user's job title, a product's 
 MemGuard sits **beside** your memory system (Mem0, Zep, Letta, LangMem, or any REST API) as a sidecar that monitors, validates, and alerts &mdash; like Datadog for agent memory.
 
 **Core insight:** Memory systems decay facts by access frequency or TTL timers. But a frequently-retrieved memory about a user's employer is highly relevant until it's wrong &mdash; then it becomes *confidently wrong* rather than just outdated. MemGuard detects this proactively.
+
+## Screenshots
+
+<details>
+<summary><strong>Memories</strong> &mdash; Browse and filter tracked memories with trust scores</summary>
+<br>
+<img src="docs/screenshots/screenshot-5.png" alt="Memories" width="800" />
+</details>
+
+<details>
+<summary><strong>Validations</strong> &mdash; Run validation strategies and monitor jobs</summary>
+<br>
+<img src="docs/screenshots/screenshot-4.png" alt="Validations" width="800" />
+</details>
+
+<details>
+<summary><strong>Connectors</strong> &mdash; Connect memory systems with guided setup</summary>
+<br>
+<img src="docs/screenshots/screenshot-3.png" alt="Connectors" width="800" />
+</details>
+
+<details>
+<summary><strong>Analytics</strong> &mdash; Trust distribution, staleness heatmap, health telemetry</summary>
+<br>
+<img src="docs/screenshots/screenshot-2.png" alt="Analytics" width="800" />
+</details>
+
+<details>
+<summary><strong>Settings</strong> &mdash; Service status, thresholds, API keys, danger zone</summary>
+<br>
+<img src="docs/screenshots/screenshot-1.png" alt="Settings" width="800" />
+</details>
 
 ## Quick Start
 
