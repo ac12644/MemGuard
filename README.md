@@ -242,6 +242,43 @@ All settings can be configured via environment variables or the Settings page in
 
 See [`.env.production`](.env.production) for a complete template.
 
+## Production Deployment
+
+For deploying with auto-TLS (HTTPS), database backups, and production security:
+
+```bash
+# Set required env vars
+export DOMAIN=memguard.yourdomain.com
+export MEMGUARD_SECRET_KEY=$(openssl rand -hex 32)
+export POSTGRES_PASSWORD=$(openssl rand -hex 16)
+
+# Deploy with production overlay
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+```
+
+This adds:
+- **Caddy** reverse proxy with automatic Let's Encrypt TLS
+- **Security headers** (HSTS, X-Frame-Options, CSP)
+- **Automated daily backups** with 30-day retention
+- **Secret key enforcement** (fails to start if default key is used)
+- **Auto-restart** on all containers
+
+### Monitoring
+
+```bash
+# Basic health
+curl https://memguard.yourdomain.com/health
+
+# Detailed health with latency metrics
+curl https://memguard.yourdomain.com/health/detailed
+```
+
+### Manual Backup
+
+```bash
+./scripts/backup.sh
+```
+
 ## Architecture
 
 ```

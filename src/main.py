@@ -9,7 +9,7 @@ from src.api.exceptions import (
     http_exception_handler,
     memguard_exception_handler,
 )
-from src.api.middleware import RateLimitMiddleware, RequestLoggingMiddleware
+from src.api.middleware import RateLimitMiddleware, RequestLoggingMiddleware, SecurityHeadersMiddleware
 from src.api.router import api_router
 from src.config import settings
 
@@ -40,6 +40,7 @@ app.add_exception_handler(StarletteHTTPException, http_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
 
 # Middleware (order matters — outermost first)
+app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(RateLimitMiddleware, requests_per_minute=120)
 app.add_middleware(
@@ -51,3 +52,18 @@ app.add_middleware(
 )
 
 app.include_router(api_router)
+
+
+@app.on_event("startup")
+async def _startup_checks():
+    log = structlog.get_logger()
+    if settings.memguard_secret_key in ("change-me-in-production", "docker-dev-secret-change-in-prod"):
+        if settings.memguard_env == "production":
+            log.error("INSECURE: MEMGUARD_SECRET_KEY is set to default. Change it immediately.")
+        else:
+            log.warning("Default secret key in use. Set MEMGUARD_SECRET_KEY for production.")
+    log.info(
+        "memguard_started",
+        env=settings.memguard_env,
+        cors=settings.cors_origins,
+    )

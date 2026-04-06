@@ -30,5 +30,12 @@ dashboard/.vite/
 # Docker
 *.log
 
+# Backups
+backups/
+
+# Caddy
+caddy_data/
+caddy_config/
+
 # Claude
 .claude/

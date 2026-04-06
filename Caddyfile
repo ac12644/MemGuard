@@ -1,0 +1,49 @@
+# MemGuard — Caddy Reverse Proxy with Auto-TLS
+# Replace {$DOMAIN} with your domain, e.g. memguard.yourdomain.com
+#
+# For local dev without TLS:
+#   caddy reverse-proxy --from :443 --to :8001
+
+{$DOMAIN:localhost} {
+	# API backend
+	handle /api/* {
+		reverse_proxy api:8000
+	}
+
+	handle /health {
+		reverse_proxy api:8000
+	}
+
+	handle /docs* {
+		reverse_proxy api:8000
+	}
+
+	handle /openapi.json {
+		reverse_proxy api:8000
+	}
+
+	handle /redoc* {
+		reverse_proxy api:8000
+	}
+
+	# Dashboard frontend
+	handle {
+		reverse_proxy dashboard:3000
+	}
+
+	# Security headers
+	header {
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		X-XSS-Protection "1; mode=block"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+	}
+
+	# Logging
+	log {
+		output stdout
+		format json
+	}
+}

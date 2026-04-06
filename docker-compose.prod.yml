@@ -1,0 +1,77 @@
+# Production overlay — use with:
+#   docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Adds: Caddy (auto-TLS), backup cron, production settings
+# Requires: DOMAIN and MEMGUARD_SECRET_KEY env vars
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    depends_on:
+      - api
+      - dashboard
+    restart: unless-stopped
+
+  api:
+    environment:
+      MEMGUARD_ENV: production
+      MEMGUARD_SECRET_KEY: ${MEMGUARD_SECRET_KEY:?Set MEMGUARD_SECRET_KEY}
+      MEMGUARD_CORS_ORIGINS: ${DOMAIN:-localhost}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    restart: unless-stopped
+
+  worker:
+    environment:
+      MEMGUARD_ENV: production
+      MEMGUARD_SECRET_KEY: ${MEMGUARD_SECRET_KEY:?Set MEMGUARD_SECRET_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    restart: unless-stopped
+
+  beat:
+    environment:
+      MEMGUARD_ENV: production
+      MEMGUARD_SECRET_KEY: ${MEMGUARD_SECRET_KEY:?Set MEMGUARD_SECRET_KEY}
+    restart: unless-stopped
+
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-memguard}
+    restart: unless-stopped
+
+  redis:
+    restart: unless-stopped
+
+  dashboard:
+    restart: unless-stopped
+
+  backup:
+    image: postgres:16-alpine
+    entrypoint: []
+    command: >
+      sh -c 'while true; do
+        echo "[$(date)] Running backup..."
+        pg_dump -h postgres -U memguard memguard | gzip > /backups/memguard_$(date +%Y%m%d_%H%M%S).sql.gz
+        find /backups -name "memguard_*.sql.gz" -mtime +30 -delete
+        echo "[$(date)] Backup complete. Sleeping 24h..."
+        sleep 86400
+      done'
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:-memguard}
+    volumes:
+      - ./backups:/backups
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:
