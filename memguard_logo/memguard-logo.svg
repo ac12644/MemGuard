@@ -1,0 +1,10 @@
+<svg width="360" height="72" viewBox="0 0 360 72" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(36, 36)">
+    <circle cx="0" cy="0" r="22" fill="none" stroke="#adc6ff" stroke-width="1.2"/>
+    <circle cx="0" cy="0" r="13" fill="none" stroke="#adc6ff" stroke-width="0.5" opacity="0.35"/>
+    <circle cx="0" cy="0" r="3.5" fill="#adc6ff" opacity="0.5"/>
+    <path d="M-7 1 L-2 6.5 L9 -5.5" fill="none" stroke="#4edea3" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="72" y="34" font-family="'Space Grotesk', system-ui, sans-serif" font-size="30" font-weight="500" fill="#c8d6e5">mem<tspan fill="#4edea3">guard</tspan></text>
+  <text x="74" y="52" font-family="'Inter', 'SF Mono', monospace" font-size="10" letter-spacing="3" fill="#5a6478">MEMORY VALIDATION LAYER</text>
+</svg>

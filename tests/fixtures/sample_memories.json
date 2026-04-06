@@ -1,0 +1,82 @@
+[
+  {
+    "external_id": "mem-001",
+    "content": "John Smith works as Senior Engineer at Acme Corp",
+    "fact_type": "job_title",
+    "source_metadata": {
+      "source_type": "api",
+      "source_url": "https://api.acme.com/employees/john-smith",
+      "source_field": "title"
+    },
+    "retrieval_count": 42
+  },
+  {
+    "external_id": "mem-002",
+    "content": "Acme Corp Pro plan costs $99/month",
+    "fact_type": "pricing",
+    "source_metadata": {
+      "source_type": "url",
+      "source_url": "https://acme.com/pricing"
+    },
+    "retrieval_count": 128
+  },
+  {
+    "external_id": "mem-003",
+    "content": "Acme Corp is headquartered at 123 Innovation Drive, San Francisco, CA 94105",
+    "fact_type": "address",
+    "source_metadata": {
+      "source_type": "url",
+      "source_url": "https://acme.com/about"
+    },
+    "retrieval_count": 15
+  },
+  {
+    "external_id": "mem-004",
+    "content": "The user prefers dark mode and Python for backend services",
+    "fact_type": "preference",
+    "source_metadata": {
+      "source_type": "conversation"
+    },
+    "retrieval_count": 67
+  },
+  {
+    "external_id": "mem-005",
+    "content": "Acme Corp uses PostgreSQL 16 and Redis 7 in production",
+    "fact_type": "technical_fact",
+    "source_metadata": {
+      "source_type": "document",
+      "source_url": "https://wiki.acme.com/infra/stack"
+    },
+    "retrieval_count": 23
+  },
+  {
+    "external_id": "mem-006",
+    "content": "Data retention policy requires deleting PII after 90 days",
+    "fact_type": "policy",
+    "source_metadata": {
+      "source_type": "document",
+      "source_url": "https://wiki.acme.com/compliance/data-retention"
+    },
+    "retrieval_count": 8
+  },
+  {
+    "external_id": "mem-007",
+    "content": "John Smith reports to Sarah Chen, VP of Engineering",
+    "fact_type": "relationship",
+    "source_metadata": {
+      "source_type": "api",
+      "source_url": "https://api.acme.com/employees/john-smith",
+      "source_field": "manager"
+    },
+    "retrieval_count": 31
+  },
+  {
+    "external_id": "mem-008",
+    "content": "Q3 board meeting scheduled for September 15, 2026",
+    "fact_type": "temporal",
+    "source_metadata": {
+      "source_type": "conversation"
+    },
+    "retrieval_count": 5
+  }
+]

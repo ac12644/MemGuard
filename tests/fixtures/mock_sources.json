@@ -1,0 +1,23 @@
+{
+  "https://api.acme.com/employees/john-smith": {
+    "id": "john-smith",
+    "name": "John Smith",
+    "title": "VP Engineering",
+    "department": "Engineering",
+    "manager": "Sarah Chen",
+    "started_at": "2022-03-15"
+  },
+  "https://acme.com/pricing": {
+    "plans": [
+      {"name": "Free", "price": 0},
+      {"name": "Pro", "price": 149, "billing": "monthly"},
+      {"name": "Enterprise", "price": "custom"}
+    ]
+  },
+  "https://acme.com/about": {
+    "company": "Acme Corp",
+    "address": "456 Tech Boulevard, San Francisco, CA 94105",
+    "founded": 2019,
+    "employees": 250
+  }
+}

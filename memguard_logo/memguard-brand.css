@@ -1,0 +1,135 @@
+/* ============================================
+   MemGuard — Brand Tokens
+   Obsidian Intelligence Design System
+   ============================================
+   Dark-first. No 1px borders. Tonal layering.
+   Sharp corners (rx:2). Space Grotesk + Inter.
+   ============================================ */
+
+:root {
+  /* ---- Surface hierarchy (depth via tone, NOT borders) ---- */
+  --mg-surface:                 #0b1326;
+  --mg-surface-container-low:   #131b2e;
+  --mg-surface-container:       #171f33;
+  --mg-surface-container-high:  #222a3e;
+  --mg-surface-container-highest:#2d3449;
+
+  /* ---- Primary (brand blue — CTAs, active states, logo ring) ---- */
+  --mg-primary:                 #adc6ff;
+  --mg-on-primary:              #002e6a;
+  --mg-primary-container:       #00468a;
+  --mg-on-primary-container:    #367ef2;
+
+  /* ---- Secondary (emerald — verified, healthy, checkmark) ---- */
+  --mg-secondary:               #4edea3;
+  --mg-on-secondary:            #003d26;
+  --mg-secondary-container:     #00a572;
+
+  /* ---- Tertiary (amber — flagged, stale, warning) ---- */
+  --mg-tertiary:                #ffb95f;
+  --mg-on-tertiary:             #3d2800;
+
+  /* ---- Error (rose — quarantined, critical) ---- */
+  --mg-error:                   #ffb4ab;
+  --mg-on-error:                #690005;
+  --mg-error-container:         #93000a;
+
+  /* ---- Text ---- */
+  --mg-on-surface:              #c8d6e5;
+  --mg-on-surface-variant:      #8b95a8;
+  --mg-text-muted:              #5a6478;
+
+  /* ---- Outline (ghost borders — 15% opacity only) ---- */
+  --mg-outline:                 #44474d;
+  --mg-outline-variant:         rgba(68, 71, 77, 0.15);
+
+  /* ---- Memory status mapping ---- */
+  --mg-status-verified:         #4edea3;
+  --mg-status-flagged:          #ffb95f;
+  --mg-status-quarantined:      #ffb4ab;
+  --mg-status-validating:       #adc6ff;
+  --mg-status-unknown:          #5a6478;
+
+  /* ---- Trust score gradient stops ---- */
+  --mg-trust-0:                 #ffb4ab;
+  --mg-trust-30:                #ffb95f;
+  --mg-trust-70:                #4edea3;
+  --mg-trust-100:               #00a572;
+
+  /* ---- Typography ---- */
+  --mg-font-display:            'Space Grotesk', system-ui, sans-serif;
+  --mg-font-body:               'Inter', system-ui, sans-serif;
+  --mg-font-mono:               'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+
+  /* ---- Corners (sharp/technical) ---- */
+  --mg-radius-sm:               0.125rem;  /* 2px — default for everything */
+  --mg-radius-md:               0.375rem;  /* 6px — cards, inputs */
+  --mg-radius-app-icon:         0.75rem;   /* 12px — app icon only */
+
+  /* ---- Shadows (diffused, never harsh) ---- */
+  --mg-shadow-float:            0px 8px 32px rgba(0, 0, 0, 0.4);
+
+  /* ---- Glassmorphism (floating overlays) ---- */
+  --mg-glass-bg:                rgba(23, 31, 51, 0.8);
+  --mg-glass-blur:              20px;
+}
+
+
+/* ============================================
+   Tailwind extend colors
+   Paste into tailwind.config.js
+   ============================================
+
+   colors: {
+     surface: {
+       DEFAULT: '#0b1326',
+       low: '#131b2e',
+       mid: '#171f33',
+       high: '#222a3e',
+       highest: '#2d3449',
+     },
+     primary: {
+       DEFAULT: '#adc6ff',
+       on: '#002e6a',
+       container: '#00468a',
+     },
+     secondary: {
+       DEFAULT: '#4edea3',
+       on: '#003d26',
+       container: '#00a572',
+     },
+     tertiary: {
+       DEFAULT: '#ffb95f',
+       on: '#3d2800',
+     },
+     error: {
+       DEFAULT: '#ffb4ab',
+       on: '#690005',
+       container: '#93000a',
+     },
+     status: {
+       verified: '#4edea3',
+       flagged: '#ffb95f',
+       quarantined: '#ffb4ab',
+       validating: '#adc6ff',
+       unknown: '#5a6478',
+     },
+     trust: {
+       critical: '#ffb4ab',
+       low: '#ffb95f',
+       good: '#4edea3',
+       high: '#00a572',
+     },
+   },
+   fontFamily: {
+     display: ["'Space Grotesk'", 'system-ui', 'sans-serif'],
+     body: ["'Inter'", 'system-ui', 'sans-serif'],
+     mono: ["'SF Mono'", "'Fira Code'", 'monospace'],
+   },
+   borderRadius: {
+     sm: '0.125rem',
+     md: '0.375rem',
+     app: '0.75rem',
+   },
+
+   ============================================ */

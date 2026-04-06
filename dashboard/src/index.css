@@ -1,0 +1,190 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Obsidian Intelligence — Color Tokens */
+    --color-background: #0b1326;
+    --color-surface: #0b1326;
+    --color-surface-container-lowest: #060e20;
+    --color-surface-container-low: #131b2e;
+    --color-surface-container: #171f33;
+    --color-surface-container-high: #222a3d;
+    --color-surface-container-highest: #2d3449;
+    --color-primary: #adc6ff;
+    --color-primary-bright: #367ef2;
+    --color-on-primary: #002e6a;
+    --color-secondary: #4edea3;
+    --color-tertiary: #ffb95f;
+    --color-error: #ffb4ab;
+    --color-error-container: #93000a;
+    --color-on-surface: #dae2fd;
+    --color-on-surface-variant: #c5c6cd;
+    --color-outline: #8f9097;
+    --color-outline-variant: #44474d;
+
+    /* Ghost border helper */
+    --ghost-border: rgba(68, 71, 77, 0.15);
+
+    /* Ambient shadow */
+    --shadow-ambient: 0px 8px 32px rgba(0, 0, 0, 0.4);
+  }
+
+  body {
+    @apply min-h-screen antialiased;
+    background-color: var(--color-background);
+    color: var(--color-on-surface);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background-color: var(--color-surface-container-high);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-surface-container-highest);
+  }
+}
+
+@layer components {
+  /* ---- Cards ---- */
+  .card {
+    background-color: var(--color-surface-container);
+    border-radius: 0.75rem;
+    border: none;
+    box-shadow: var(--shadow-ambient);
+  }
+  .card-header {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-on-surface-variant);
+    background-color: var(--color-surface-container-high);
+    border-radius: 0.75rem 0.75rem 0 0;
+  }
+  .card-ghost-border {
+    box-shadow: var(--shadow-ambient), inset 0 0 0 1px var(--ghost-border);
+  }
+
+  /* ---- Buttons ---- */
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
+    border-radius: 0.125rem;
+    background: linear-gradient(135deg, #adc6ff, #367ef2);
+    color: var(--color-on-primary);
+  }
+  .btn-primary:hover {
+    filter: brightness(1.1);
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all active:scale-[0.98];
+    border-radius: 0.125rem;
+    background-color: var(--color-surface-container-high);
+    color: var(--color-on-surface-variant);
+    border: none;
+  }
+  .btn-secondary:hover {
+    background-color: var(--color-surface-container-highest);
+    color: var(--color-on-surface);
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 text-sm transition-all;
+    border-radius: 0.125rem;
+    color: var(--color-on-surface-variant);
+    background: transparent;
+  }
+  .btn-ghost:hover {
+    background-color: var(--color-surface-container-high);
+    color: var(--color-on-surface);
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium transition-all active:scale-[0.98];
+    border-radius: 0.125rem;
+    background-color: rgba(147, 0, 10, 0.25);
+    color: var(--color-error);
+  }
+  .btn-danger:hover {
+    background-color: rgba(147, 0, 10, 0.4);
+  }
+
+  /* ---- Form Fields ---- */
+  .input-field {
+    @apply px-3 py-2 text-sm outline-none transition-colors;
+    border-radius: 0.125rem;
+    background-color: var(--color-surface-container-high);
+    color: var(--color-on-surface);
+    border: 1px solid transparent;
+  }
+  .input-field:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(173, 198, 255, 0.15);
+  }
+
+  .select-field {
+    @apply px-3 py-2 text-sm outline-none transition-colors cursor-pointer appearance-none;
+    border-radius: 0.125rem;
+    background-color: var(--color-surface-container-high);
+    color: var(--color-on-surface);
+    border: 1px solid transparent;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23c5c6cd' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 6l3.5 4 3.5-4z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 28px;
+  }
+  .select-field:focus {
+    border-color: var(--color-primary);
+  }
+
+  /* ---- Tables ---- */
+  .table-row {
+    @apply transition-colors;
+    border: none;
+  }
+  .table-row:hover {
+    background-color: var(--color-surface-container-high);
+  }
+  .table-header {
+    background-color: var(--color-surface-container-high);
+  }
+
+  /* ---- Utility ---- */
+  .shimmer {
+    @apply animate-pulse rounded;
+    background-color: var(--color-surface-container-high);
+  }
+
+  .mono {
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', ui-monospace, monospace;
+    font-size: 0.8125rem;
+  }
+
+  /* Trust-score status colors using design tokens */
+  .status-verified {
+    color: var(--color-secondary);
+  }
+  .status-flagged {
+    color: var(--color-tertiary);
+  }
+  .status-quarantined {
+    color: var(--color-error);
+  }
+}
