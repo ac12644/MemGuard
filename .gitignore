@@ -39,3 +39,7 @@ caddy_config/
 
 # Claude
 .claude/
+
+# Internal dev spec — keep local only
+CLAUDE.md
+Claude.md
