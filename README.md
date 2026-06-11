@@ -17,17 +17,18 @@
 </p>
 
 <p align="center">
+  <a href="#how-it-works">How It Works</a> &middot;
   <a href="#quick-start">Quick Start</a> &middot;
   <a href="#connectors">Connectors</a> &middot;
   <a href="#validation-strategies">Strategies</a> &middot;
   <a href="#api-reference">API</a> &middot;
-  <a href="#contributing">Contributing</a>
+  <a href="#roadmap">Roadmap</a>
 </p>
 
 ---
 
 <p align="center">
-  <img src="docs/screenshots/screenshot-6.png" alt="Dashboard" width="800" />
+  <img src="docs/screenshots/overview.png" alt="MemGuard Overview — memory health, validations, staleness heatmap" width="800" />
 </p>
 
 ## Why MemGuard?
@@ -38,36 +39,65 @@ MemGuard sits **beside** your memory system (Mem0, Zep, Letta, LangMem, or any R
 
 **Core insight:** Memory systems decay facts by access frequency or TTL timers. But a frequently-retrieved memory about a user's employer is highly relevant until it's wrong &mdash; then it becomes *confidently wrong* rather than just outdated. MemGuard detects this proactively.
 
+### Sixty-second example
+
+Your agent stored this fact six months ago:
+
+> *"John is a Senior Engineer at Acme Corp"* &mdash; synced from `https://api.acme.com/employees/123`
+
+Acme promoted John. Nothing in your agent's conversations mentions it, so the memory keeps its high retrieval relevance &mdash; and is now confidently wrong. On its next sweep, MemGuard re-fetches the source and records:
+
+```json
+{
+  "outcome": "flagged",
+  "source_current_value": "VP Engineering",
+  "memory_stored_value": "Senior Engineer",
+  "drift_detected": true,
+  "confidence": 0.9,
+  "reasoning": "Source now returns 'VP Engineering' but memory stores 'Senior Engineer'"
+}
+```
+
+The memory's trust score drops, it's flagged on the dashboard (auto-quarantined if it falls below the threshold), and agents querying through the MCP tools see the degraded trust &mdash; before the stale fact produces a wrong answer.
+
+### Doesn't my memory system already handle this?
+
+Partially. Modern memory systems (e.g. Zep's temporal knowledge graph) invalidate a fact when a **contradicting fact arrives in conversation** &mdash; if the user says "I moved to Berlin," the old city is superseded. What they can't catch is the fact that changed **without any signal arriving**: the pricing page was updated, the person changed jobs, the API was deprecated. Nobody told the agent, so nothing supersedes the memory.
+
+MemGuard covers that gap by checking memories against **external reality** &mdash; re-fetching sources, statistical staleness curves, LLM drift checks &mdash; from the outside, for any memory system, without replacing your storage.
+
+## How It Works
+
+1. **Connect** a memory system (Mem0, Zep, Letta, LangMem, or any REST API) and **sync** &mdash; memories are tracked in MemGuard's own database; your store stays untouched.
+2. **Classify** &mdash; each memory gets a fact-type (`job_title`, `pricing`, `address`, &hellip;) that determines how fast it typically goes stale.
+3. **Validate** &mdash; scheduled sweeps and priority queues run validation strategies against each memory, most-retrieved and lowest-trust first.
+4. **Score** &mdash; every validation updates a composite trust score (0&ndash;100%).
+5. **Act** &mdash; below 50% trust a memory is flagged; below 30% it's quarantined so agents stop using it. Where the source system supports it, trust scores are written back; agents can also query trust live via MCP.
+
 ## Screenshots
 
 <details>
-<summary><strong>Memories</strong> &mdash; Browse and filter tracked memories with trust scores</summary>
+<summary><strong>Memories</strong> &mdash; Every tracked fact with its trust standing</summary>
 <br>
-<img src="docs/screenshots/screenshot-5.png" alt="Memories" width="800" />
+<img src="docs/screenshots/memories.png" alt="Memories" width="800" />
 </details>
 
 <details>
 <summary><strong>Validations</strong> &mdash; Run validation strategies and monitor jobs</summary>
 <br>
-<img src="docs/screenshots/screenshot-4.png" alt="Validations" width="800" />
-</details>
-
-<details>
-<summary><strong>Connectors</strong> &mdash; Connect memory systems with guided setup</summary>
-<br>
-<img src="docs/screenshots/screenshot-3.png" alt="Connectors" width="800" />
+<img src="docs/screenshots/validations.png" alt="Validations" width="800" />
 </details>
 
 <details>
 <summary><strong>Analytics</strong> &mdash; Trust distribution, staleness heatmap, health telemetry</summary>
 <br>
-<img src="docs/screenshots/screenshot-2.png" alt="Analytics" width="800" />
+<img src="docs/screenshots/analytics.png" alt="Analytics" width="800" />
 </details>
 
 <details>
 <summary><strong>Settings</strong> &mdash; Service status, thresholds, API keys, danger zone</summary>
 <br>
-<img src="docs/screenshots/screenshot-1.png" alt="Settings" width="800" />
+<img src="docs/screenshots/settings.png" alt="Settings" width="800" />
 </details>
 
 ## Quick Start
@@ -158,15 +188,17 @@ Connector secrets are **encrypted at rest** and masked in all API responses.
 
 ## Validation Strategies
 
-| Strategy | How It Works | Requires LLM | Cost |
-|----------|-------------|:------------:|------|
-| **Source-Linked** | Re-fetch the original source URL and compare values | No | HTTP calls |
-| **Cross-Reference** | Verify against 2-3 independent sources | No | HTTP calls |
-| **Temporal Pattern** | Predict staleness from statistical decay curves | No | Free |
-| **Semantic Drift** | LLM detects contradictions in recent agent context | Yes | ~$0.002/memory |
-| **Causal Chain** | Find memory dependencies, cascade flags | Yes | ~$0.003/memory |
+| Strategy | How It Works | Status | Requires LLM | Cost |
+|----------|-------------|:------:|:------------:|------|
+| **Source-Linked** | Re-fetch the original source URL and compare values | ✅ | No | HTTP calls |
+| **Temporal Pattern** | Predict staleness from statistical decay curves | ✅ | No | Free |
+| **Semantic Drift** | LLM detects contradictions in recent agent context | ✅ | Yes | ~$0.002/memory |
+| **Cross-Reference** | Verify against 2&ndash;3 independent sources | 🚧 planned | No | HTTP calls |
+| **Causal Chain** | Find memory dependencies, cascade flags | 🚧 planned | Yes | ~$0.003/memory |
 
 > LLM strategies require an Anthropic API key. Configure it in Settings or via the `ANTHROPIC_API_KEY` environment variable. The product works fully without it &mdash; LLM strategies are optional.
+
+> 🚧 strategies are scaffolded in `src/engine/strategies/` but not yet callable from the validation orchestrator &mdash; see [Roadmap](#roadmap).
 
 ### Trust Score
 
@@ -182,11 +214,7 @@ Memories below the **flag threshold** (default 50%) are flagged. Below the **qua
 
 ## MCP Server
 
-MemGuard exposes tools for AI agents via the Model Context Protocol:
-
-```bash
-python -m src.mcp.server
-```
+MemGuard exposes tools for AI agents via the Model Context Protocol (stdio transport):
 
 | Tool | Purpose |
 |------|---------|
@@ -194,6 +222,30 @@ python -m src.mcp.server
 | `get_memory_health` | Get overall health metrics for the agent's memory store |
 | `report_stale_memory` | Report a memory the agent suspects is stale |
 | `get_trusted_memories` | Retrieve only memories above a trust score threshold |
+
+### Connect it to your agent
+
+```bash
+# Claude Code
+claude mcp add memguard -- python -m src.mcp.server
+```
+
+```json
+// Claude Desktop — claude_desktop_config.json
+{
+  "mcpServers": {
+    "memguard": {
+      "command": "python",
+      "args": ["-m", "src.mcp.server"],
+      "cwd": "/path/to/memguard"
+    }
+  }
+}
+```
+
+The MCP server reads the same `.env` (`DATABASE_URL`) as the API, so run it from the repo root with the database up.
+
+**Rule of thumb for agents:** use `get_trusted_memories` instead of raw memory retrieval whenever a wrong fact is costlier than a missing one, and call `validate_memory` before acting on a single high-stakes fact.
 
 ## API Reference
 
@@ -240,7 +292,7 @@ All settings can be configured via environment variables or the Settings page in
 | `MEMGUARD_SOURCE_RATE_LIMIT_PER_DOMAIN` | `10` | Requests/sec per source domain |
 | `MEMGUARD_LLM_RATE_LIMIT_RPM` | `60` | LLM calls per minute |
 
-See [`.env.production`](.env.production) for a complete template.
+See [`.env.example`](.env.example) for a complete template covering both development and production.
 
 ## Production Deployment
 
@@ -338,6 +390,16 @@ dashboard/                 # React SPA (8 pages)
 tests/                     # Unit + integration tests
 ```
 
+## Roadmap
+
+- **Cross-reference validation** &mdash; verify facts against independent external sources (strategy scaffold exists; needs source adapters and orchestrator wiring)
+- **Causal chain validation** &mdash; dependency graph between memories with cascade flagging
+- **Webhook emission from the validation loop** &mdash; registration endpoints exist; events not yet fired on flag/quarantine
+- **Per-tenant LLM budget enforcement** &mdash; Redis-tracked monthly caps for LLM strategies
+- **Auto-remediation writeback** &mdash; push approved remediations back to the source memory system
+
+Contributions toward any of these are especially welcome.
+
 ## Contributing
 
 Contributions are welcome. Please:
@@ -358,18 +420,4 @@ Contributions are welcome. Please:
 
 ## License
 
-```
-Copyright 2026 MemGuard Contributors
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-```
+[Apache 2.0](LICENSE) &copy; 2026 MemGuard Contributors
