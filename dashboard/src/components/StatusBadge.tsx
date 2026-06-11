@@ -1,30 +1,42 @@
-const styles: Record<string, { bg: string; text: string }> = {
-  active:       { bg: 'bg-[#4edea3]/10', text: 'text-[#4edea3]' },
-  verified:     { bg: 'bg-[#4edea3]/10', text: 'text-[#4edea3]' },
-  completed:    { bg: 'bg-[#4edea3]/10', text: 'text-[#4edea3]' },
-  healthy:      { bg: 'bg-[#4edea3]/10', text: 'text-[#4edea3]' },
-  flagged:      { bg: 'bg-[#ffb95f]/10', text: 'text-[#ffb95f]' },
-  running:      { bg: 'bg-[#adc6ff]/10', text: 'text-[#adc6ff]' },
-  pending:      { bg: 'bg-[#c5c6cd]/10', text: 'text-[#c5c6cd]' },
-  quarantined:  { bg: 'bg-[#ffb4ab]/10', text: 'text-[#ffb4ab]' },
-  invalidated:  { bg: 'bg-[#8f9097]/10', text: 'text-[#8f9097]' },
-  failed:       { bg: 'bg-[#ffb4ab]/10', text: 'text-[#ffb4ab]' },
-  cancelled:    { bg: 'bg-[#8f9097]/10', text: 'text-[#8f9097]' },
-  degraded:     { bg: 'bg-[#ffb95f]/10', text: 'text-[#ffb95f]' },
-  stale:        { bg: 'bg-[#ffb95f]/10', text: 'text-[#ffb95f]' },
-  contradicted: { bg: 'bg-[#ffb4ab]/10', text: 'text-[#ffb4ab]' },
-  source_unavailable: { bg: 'bg-[#ffb4ab]/10', text: 'text-[#ffb4ab]' },
-  manual:       { bg: 'bg-[#c5c6cd]/10', text: 'text-[#c5c6cd]' },
+/**
+ * Rubber-stamp status mark: mono uppercase, inked border,
+ * tinted ground. The ledger's verdict on a record.
+ */
+type Tone = 'verified' | 'warning' | 'danger' | 'info' | 'neutral'
+
+const toneByStatus: Record<string, Tone> = {
+  active: 'verified',
+  verified: 'verified',
+  completed: 'verified',
+  healthy: 'verified',
+  restored: 'verified',
+  flagged: 'warning',
+  degraded: 'warning',
+  stale: 'warning',
+  running: 'info',
+  pending: 'neutral',
+  manual: 'neutral',
+  cancelled: 'neutral',
+  invalidated: 'neutral',
+  quarantined: 'danger',
+  failed: 'danger',
+  contradicted: 'danger',
+  source_unavailable: 'danger',
 }
 
-const fallback = { bg: 'bg-[#c5c6cd]/10', text: 'text-[#c5c6cd]' }
+const toneStyles: Record<Tone, string> = {
+  verified: 'text-ledger-secondary bg-ledger-secondary/[0.07]',
+  warning: 'text-ledger-tertiary bg-ledger-tertiary/[0.08]',
+  danger: 'text-ledger-error bg-ledger-error-container/70',
+  info: 'text-ledger-primary bg-ledger-primary/[0.07]',
+  neutral: 'text-ledger-on-surface-variant bg-ledger-surface-high',
+}
 
 export default function StatusBadge({ status }: { status: string }) {
-  const s = styles[status] ?? fallback
+  const tone = toneByStatus[status] ?? 'neutral'
   return (
-    <span
-      className={`inline-flex items-center rounded-sm px-2 py-0.5 text-[11px] font-semibold tracking-wide ${s.bg} ${s.text}`}
-    >
+    <span className={`stamp animate-stamp-in ${toneStyles[tone]}`}>
+      {status === 'running' && <span className="h-1.5 w-1.5 rounded-full bg-current animate-glow-pulse" />}
       {status.replace(/_/g, ' ')}
     </span>
   )

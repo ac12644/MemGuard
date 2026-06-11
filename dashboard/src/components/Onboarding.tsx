@@ -35,48 +35,35 @@ export default function Onboarding({ hasConnectors, hasMemories, hasValidations 
   const allDone = completedCount === 3
 
   return (
-    <div className="flex flex-col items-center justify-center animate-fade-in" style={{ minHeight: '60vh' }}>
-      <div
-        className="w-full max-w-lg rounded-xl p-8"
-        style={{
-          backgroundColor: 'var(--color-surface-container)',
-          boxShadow: 'var(--shadow-ambient)',
-        }}
-      >
-        {/* Welcome heading */}
-        <div className="text-center mb-8">
-          <h1 className="font-headline text-3xl font-bold">
-            <span style={{ color: '#c8d6e5' }}>Welcome to </span>
-            <span style={{ color: '#c8d6e5' }}>mem</span>
-            <span style={{ color: '#4edea3' }}>guard</span>
+    <div className="flex min-h-[60vh] flex-col items-center justify-center animate-fade-in">
+      <div className="card w-full max-w-lg p-8">
+        {/* Registration heading */}
+        <div className="mb-8 text-center">
+          <p className="ledger-no">Registration</p>
+          <h1 className="mt-1 font-headline text-3xl font-semibold text-ledger-on-surface">
+            Welcome to MemGuard
           </h1>
-          <p className="mt-2 text-sm" style={{ color: 'var(--color-outline)' }}>
-            Get started in 3 simple steps
+          <p className="mono mt-2 text-[11px] uppercase tracking-[0.12em] text-ledger-on-surface-variant">
+            Get started in 3 steps
           </p>
         </div>
 
         {/* Progress bar */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium" style={{ color: 'var(--color-outline)' }}>
+          <div className="mb-2 flex items-center justify-between">
+            <span className="mono text-[10px] uppercase tracking-[0.12em] text-ledger-on-surface-variant">
               Setup progress
             </span>
-            <span className="text-xs font-semibold tabular-nums" style={{ color: 'var(--color-on-surface)' }}>
+            <span className="mono text-xs font-semibold tabular-nums text-ledger-on-surface">
               {completedCount}/3
             </span>
           </div>
-          <div
-            className="h-2 w-full rounded-full overflow-hidden"
-            style={{ backgroundColor: 'var(--color-surface-container-highest)' }}
-          >
+          <div className="h-2 w-full overflow-hidden rounded-full border border-ledger-outline-variant bg-ledger-surface-lowest">
             <div
-              className="h-full rounded-full transition-all duration-700 ease-out"
-              style={{
-                width: `${(completedCount / 3) * 100}%`,
-                background: allDone
-                  ? '#4edea3'
-                  : 'linear-gradient(90deg, #adc6ff, #4edea3)',
-              }}
+              className={`h-full rounded-full transition-all duration-700 ease-out ${
+                allDone ? 'bg-ledger-secondary' : 'bg-ledger-primary'
+              }`}
+              style={{ width: `${(completedCount / 3) * 100}%` }}
             />
           </div>
         </div>
@@ -84,22 +71,19 @@ export default function Onboarding({ hasConnectors, hasMemories, hasValidations 
         {/* All done state */}
         {allDone ? (
           <div className="flex flex-col items-center py-6 animate-fade-in">
-            <div
-              className="flex h-16 w-16 items-center justify-center rounded-full mb-4"
-              style={{ backgroundColor: 'rgba(78, 222, 163, 0.12)' }}
-            >
-              <PartyPopper size={32} style={{ color: '#4edea3' }} />
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-ledger-secondary/30 bg-ledger-secondary/[0.08]">
+              <PartyPopper size={32} className="text-ledger-secondary" />
             </div>
-            <h2 className="font-headline text-xl font-bold" style={{ color: '#4edea3' }}>
+            <h2 className="font-headline text-xl font-semibold text-ledger-secondary">
               You're all set!
             </h2>
-            <p className="mt-2 text-sm text-center" style={{ color: 'var(--color-outline)' }}>
+            <p className="mt-2 text-center text-sm text-ledger-on-surface-variant">
               Your memory systems are connected and validated. The dashboard will now show live data.
             </p>
           </div>
         ) : (
-          /* Checklist steps */
-          <div className="space-y-3">
+          /* Checklist steps — ruled ledger rows */
+          <div>
             {STEPS.map((step, i) => {
               const isDone = completed[i]
               const Icon = step.icon
@@ -107,55 +91,36 @@ export default function Onboarding({ hasConnectors, hasMemories, hasValidations 
                 <button
                   key={step.key}
                   onClick={() => navigate(step.path)}
-                  className="flex w-full items-center gap-4 rounded-lg px-4 py-4 text-left transition-all"
-                  style={{
-                    backgroundColor: isDone
-                      ? 'rgba(78, 222, 163, 0.06)'
-                      : 'transparent',
-                    cursor: 'pointer',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isDone) e.currentTarget.style.backgroundColor = 'var(--color-surface-container-high)'
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isDone) e.currentTarget.style.backgroundColor = 'transparent'
-                  }}
+                  className={`flex w-full cursor-pointer items-center gap-4 border-b border-[rgba(29,27,20,0.12)] px-3 py-4 text-left transition-colors last:border-b-0 ${
+                    isDone ? 'bg-ledger-secondary/[0.05]' : 'hover:bg-ledger-surface-low'
+                  }`}
                 >
-                  {/* Step number / check */}
+                  {/* Step check */}
                   <div className="shrink-0">
                     {isDone ? (
-                      <CheckCircle2 size={22} style={{ color: '#4edea3' }} />
+                      <CheckCircle2 size={22} className="text-ledger-secondary" />
                     ) : (
-                      <Circle size={22} style={{ color: 'var(--color-outline)' }} />
+                      <Circle size={22} className="text-ledger-outline" />
                     )}
                   </div>
 
-                  {/* Icon + label */}
+                  {/* Icon */}
                   <div
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-                    style={{
-                      backgroundColor: isDone
-                        ? 'rgba(78, 222, 163, 0.10)'
-                        : 'rgba(173, 198, 255, 0.08)',
-                    }}
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-sharp border ${
+                      isDone
+                        ? 'border-ledger-secondary/25 bg-ledger-secondary/[0.08]'
+                        : 'border-ledger-outline-variant bg-ledger-surface-low'
+                    }`}
                   >
-                    <Icon
-                      size={18}
-                      style={{
-                        color: isDone ? '#4edea3' : 'var(--color-primary)',
-                      }}
-                    />
+                    <Icon size={18} className={isDone ? 'text-ledger-secondary' : 'text-ledger-primary'} />
                   </div>
 
-                  <div className="flex-1 min-w-0">
+                  {/* Label */}
+                  <div className="min-w-0 flex-1">
                     <p
-                      className="text-sm font-medium"
-                      style={{
-                        color: isDone
-                          ? 'var(--color-outline)'
-                          : 'var(--color-on-surface)',
-                        textDecoration: isDone ? 'line-through' : 'none',
-                      }}
+                      className={`text-sm font-medium ${
+                        isDone ? 'text-ledger-on-surface-variant line-through' : 'text-ledger-on-surface'
+                      }`}
                     >
                       {step.label}
                     </p>
@@ -163,7 +128,7 @@ export default function Onboarding({ hasConnectors, hasMemories, hasValidations 
 
                   {/* Arrow hint for incomplete steps */}
                   {!isDone && (
-                    <span className="text-xs font-medium shrink-0" style={{ color: 'var(--color-primary)' }}>
+                    <span className="mono shrink-0 text-xs font-medium text-ledger-primary">
                       Go &rarr;
                     </span>
                   )}

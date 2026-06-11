@@ -4,6 +4,10 @@ interface Props {
   size?: 'sm' | 'lg'
 }
 
+/**
+ * Ink-drawn health gauge: hairline track, solid ink arc,
+ * Fraunces numeral at center. No glow — precision, not neon.
+ */
 export default function HealthScore({ score, label = 'Memory Health', size = 'lg' }: Props) {
   const pct = Math.round(score * 100)
   const isLg = size === 'lg'
@@ -11,82 +15,60 @@ export default function HealthScore({ score, label = 'Memory Health', size = 'lg
   const circumference = 2 * Math.PI * r
   const offset = circumference - (pct / 100) * circumference
   const svgSize = isLg ? 148 : 68
-  const strokeW = isLg ? 10 : 5
+  const strokeW = isLg ? 8 : 4
 
-  // Emerald glow for healthy, tertiary for mid, error for low
-  const ringColor =
-    pct >= 70
-      ? '#4edea3'
-      : pct >= 40
-        ? '#ffb95f'
-        : '#ffb4ab'
-
-  const glowColor =
-    pct >= 70
-      ? 'drop-shadow(0 0 12px rgba(78, 222, 163, 0.5)) drop-shadow(0 0 32px rgba(78, 222, 163, 0.2))'
-      : pct >= 40
-        ? 'drop-shadow(0 0 12px rgba(255, 185, 95, 0.4)) drop-shadow(0 0 32px rgba(255, 185, 95, 0.15))'
-        : 'drop-shadow(0 0 12px rgba(255, 180, 171, 0.4)) drop-shadow(0 0 32px rgba(255, 180, 171, 0.15))'
-
-  const gradientId = `gauge-${size}-${pct}`
+  const ringColor = pct >= 70 ? '#1e7a4c' : pct >= 40 ? '#a66102' : '#a8322d'
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <div className="relative" style={{ filter: glowColor }}>
+      <div className="relative">
         <svg width={svgSize} height={svgSize} className="-rotate-90">
-          {/* Background track */}
+          {/* Hairline track */}
           <circle
             cx={svgSize / 2}
             cy={svgSize / 2}
             r={r}
             fill="none"
-            stroke="rgba(34, 42, 61, 0.8)"
-            strokeWidth={strokeW}
+            stroke="rgba(29, 27, 20, 0.1)"
+            strokeWidth={1}
           />
-          <defs>
-            <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor={ringColor} />
-              <stop offset="100%" stopColor={ringColor} stopOpacity="0.6" />
-            </linearGradient>
-          </defs>
-          {/* Active arc */}
+          {/* Dotted reference ring */}
+          <circle
+            cx={svgSize / 2}
+            cy={svgSize / 2}
+            r={r + strokeW / 2 + 3}
+            fill="none"
+            stroke="rgba(29, 27, 20, 0.08)"
+            strokeWidth={1}
+            strokeDasharray="1 4"
+          />
+          {/* Ink arc */}
           <circle
             cx={svgSize / 2}
             cy={svgSize / 2}
             r={r}
             fill="none"
-            stroke={`url(#${gradientId})`}
+            stroke={ringColor}
             strokeWidth={strokeW}
             strokeDasharray={circumference}
             strokeDashoffset={offset}
-            strokeLinecap="round"
+            strokeLinecap="butt"
             className="animate-gauge"
-            style={
-              { '--circumference': circumference, '--offset': offset } as React.CSSProperties
-            }
+            style={{ '--circumference': circumference, '--offset': offset } as React.CSSProperties}
           />
         </svg>
-        {/* Center number */}
+        {/* Center numeral */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span
-            className={`font-headline font-bold ${isLg ? 'text-4xl' : 'text-lg'}`}
+            className={`font-headline font-semibold tabular-nums ${isLg ? 'text-[2.6rem] leading-none' : 'text-lg'}`}
             style={{ color: ringColor }}
           >
             {pct}
           </span>
-          {isLg && (
-            <span className="text-[11px] font-medium" style={{ color: 'var(--color-on-surface-variant)' }}>
-              / 100
-            </span>
-          )}
+          {isLg && <span className="mono mt-1 text-[10px] text-ledger-outline">/ 100</span>}
         </div>
       </div>
-      <span
-        className="text-xs font-semibold uppercase tracking-wider"
-        style={{ color: 'var(--color-on-surface-variant)' }}
-      >
-        {label}
-      </span>
+      <span className="ledger-no">{label}</span>
     </div>
   )
 }

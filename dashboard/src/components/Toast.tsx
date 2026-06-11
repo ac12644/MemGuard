@@ -51,17 +51,17 @@ const iconMap = {
 }
 
 const colorMap = {
-  success: { bg: 'rgba(78, 222, 163, 0.12)', border: 'rgba(78, 222, 163, 0.25)', text: '#4edea3' },
-  error: { bg: 'rgba(255, 180, 171, 0.12)', border: 'rgba(255, 180, 171, 0.25)', text: '#ffb4ab' },
-  warning: { bg: 'rgba(255, 185, 95, 0.12)', border: 'rgba(255, 185, 95, 0.25)', text: '#ffb95f' },
-  info: { bg: 'rgba(173, 198, 255, 0.12)', border: 'rgba(173, 198, 255, 0.25)', text: '#adc6ff' },
+  success: { bg: '#eaf3ec', border: 'rgba(30, 122, 76, 0.35)', text: '#1e7a4c' },
+  error: { bg: '#f3dedc', border: 'rgba(168, 50, 45, 0.35)', text: '#a8322d' },
+  warning: { bg: '#f5e7cf', border: 'rgba(166, 97, 2, 0.35)', text: '#a66102' },
+  info: { bg: '#e7ecf7', border: 'rgba(35, 64, 142, 0.3)', text: '#23408e' },
 }
 
 function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) {
   const c = colorMap[toast.type]
   return (
     <div
-      className="pointer-events-auto flex items-center gap-2.5 rounded-lg px-4 py-3 text-sm font-medium animate-slide-up shadow-ambient backdrop-blur-sm"
+      className="pointer-events-auto flex items-center gap-2.5 rounded-md px-4 py-3 text-sm font-semibold animate-slide-up shadow-lifted"
       style={{ backgroundColor: c.bg, border: `1px solid ${c.border}`, color: c.text, minWidth: 260 }}
     >
       {iconMap[toast.type]}

@@ -5,6 +5,7 @@ import { cancelValidation, createValidation, fetchValidations, fetchSettings } f
 import StatusBadge from '../components/StatusBadge'
 import ErrorBanner from '../components/ErrorBanner'
 import Pagination from '../components/Pagination'
+import PageHeader from '../components/PageHeader'
 import { useToast } from '../components/Toast'
 import { Globe, Layers, BrainCircuit, GitBranch, Play, X, Lock, Key } from 'lucide-react'
 import { formatTimestamp, titleCase } from '../utils/time'
@@ -69,13 +70,7 @@ export default function Validations() {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* Header */}
-      <div>
-        <h1 className="font-headline text-2xl font-bold text-obsidian-on-surface">Validations</h1>
-        <p className="mt-1 text-sm text-obsidian-on-surface-variant">
-          Run and monitor memory validation jobs
-        </p>
-      </div>
+      <PageHeader no="04" title="Validations" description="Run and monitor validation sweeps" />
 
       {jobsQuery.isError && (
         <ErrorBanner message={(jobsQuery.error as Error).message} onRetry={() => jobsQuery.refetch()} />
@@ -83,16 +78,13 @@ export default function Validations() {
 
       {/* LLM key banner */}
       {!hasLlmKey && (
-        <div
-          className="flex items-center gap-3 rounded-lg px-5 py-3.5"
-          style={{ backgroundColor: 'rgba(173, 198, 255, 0.08)' }}
-        >
-          <Key size={16} style={{ color: '#adc6ff' }} />
+        <div className="flex items-center gap-3 rounded-sharp border border-ledger-primary/25 bg-ledger-primary/[0.06] px-5 py-3.5">
+          <Key size={16} className="shrink-0 text-ledger-primary" />
           <div className="flex-1">
-            <p className="text-sm font-medium" style={{ color: '#adc6ff' }}>
+            <p className="text-sm font-medium text-ledger-primary">
               Anthropic API key not configured
             </p>
-            <p className="text-xs mt-0.5" style={{ color: '#8f9097' }}>
+            <p className="mt-0.5 text-xs text-ledger-on-surface-variant">
               Semantic Drift and Causal Chain strategies require an Anthropic key for LLM inference.
             </p>
           </div>
@@ -110,25 +102,25 @@ export default function Validations() {
           return (
             <div
               key={s.key}
-              className={`card p-5 flex flex-col justify-between transition-colors ${locked ? 'opacity-60' : 'hover:bg-obsidian-surface-high'}`}
+              className={`card p-5 flex flex-col justify-between transition-all ${locked ? 'opacity-60' : 'hover:shadow-lifted hover:-translate-y-px'}`}
             >
               <div>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-sm bg-obsidian-surface-highest">
-                    <Icon size={18} className="text-obsidian-primary" />
+                  <div className="flex h-9 w-9 items-center justify-center rounded-sharp border border-ledger-outline-variant bg-ledger-surface-low">
+                    <Icon size={18} className="text-ledger-primary" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-headline text-sm font-semibold text-obsidian-on-surface">
+                    <h3 className="font-headline text-sm font-semibold text-ledger-on-surface">
                       {s.label}
                     </h3>
                     {locked && (
-                      <span className="flex items-center gap-1 text-[10px] mt-0.5" style={{ color: '#ffb95f' }}>
+                      <span className="mt-0.5 flex items-center gap-1 text-[10px] text-ledger-tertiary">
                         <Lock size={9} /> Requires Anthropic key
                       </span>
                     )}
                   </div>
                 </div>
-                <p className="text-xs leading-relaxed text-obsidian-on-surface-variant">
+                <p className="text-xs leading-relaxed text-ledger-on-surface-variant">
                   {s.description}
                 </p>
               </div>
@@ -153,7 +145,7 @@ export default function Validations() {
 
       {/* Active Jobs */}
       <div>
-        <h2 className="font-headline text-sm font-semibold uppercase tracking-wider text-obsidian-on-surface-variant mb-4">
+        <h2 className="mono mb-4 text-[10px] uppercase tracking-[0.12em] text-ledger-on-surface-variant">
           Validation Jobs
         </h2>
 
@@ -171,10 +163,10 @@ export default function Validations() {
           ) : !jobs?.length ? (
             <div className="flex h-32 items-center justify-center">
               <div className="text-center">
-                <p className="text-sm font-medium text-obsidian-on-surface">
+                <p className="text-sm font-medium text-ledger-on-surface">
                   Run your first validation to check memory accuracy
                 </p>
-                <p className="mt-1 text-xs text-obsidian-on-surface-variant">
+                <p className="mt-1 text-xs text-ledger-on-surface-variant">
                   Pick a strategy above to start a validation job.
                 </p>
               </div>
@@ -182,21 +174,21 @@ export default function Validations() {
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-[11px] font-semibold uppercase tracking-wider text-obsidian-outline">
-                  <th className="px-5 py-3">Type</th>
-                  <th className="px-5 py-3">Status</th>
-                  <th className="px-5 py-3">Progress</th>
-                  <th className="px-5 py-3">Total</th>
-                  <th className="px-5 py-3">Flagged</th>
-                  <th className="px-5 py-3">Quarantined</th>
-                  <th className="px-5 py-3">Created</th>
+                <tr className="table-header mono text-left text-[10px] uppercase tracking-[0.12em] text-ledger-on-surface-variant">
+                  <th className="px-5 py-3 font-medium">Type</th>
+                  <th className="px-5 py-3 font-medium">Status</th>
+                  <th className="px-5 py-3 font-medium">Progress</th>
+                  <th className="px-5 py-3 font-medium">Total</th>
+                  <th className="px-5 py-3 font-medium">Flagged</th>
+                  <th className="px-5 py-3 font-medium">Quarantined</th>
+                  <th className="px-5 py-3 font-medium">Created</th>
                   <th className="px-5 py-3 w-16"></th>
                 </tr>
               </thead>
               <tbody>
                 {jobs.map((j) => (
                   <tr key={j.id} className="table-row">
-                    <td className="px-5 py-3 font-medium text-obsidian-on-surface">
+                    <td className="px-5 py-3 font-medium text-ledger-on-surface">
                       {titleCase(j.job_type)}
                     </td>
                     <td className="px-5 py-3">
@@ -204,32 +196,26 @@ export default function Validations() {
                     </td>
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="h-1 w-24 rounded-full bg-obsidian-surface-highest overflow-hidden">
+                        <div className="h-[5px] w-24 overflow-hidden rounded-full border border-ledger-outline-variant bg-ledger-surface-lowest">
                           <div
-                            className={`h-full rounded-full transition-all duration-500 ${
-                              j.status === 'completed'
-                                ? 'bg-[#4edea3]'
-                                : j.status === 'failed'
-                                  ? 'bg-[#ffb4ab]'
-                                  : 'bg-[#adc6ff]'
-                            }`}
+                            className="h-full rounded-full bg-ledger-primary transition-all duration-500"
                             style={{ width: `${j.progress * 100}%` }}
                           />
                         </div>
-                        <span className="text-[11px] tabular-nums text-obsidian-outline">
+                        <span className="mono text-[11px] tabular-nums text-ledger-on-surface-variant">
                           {Math.round(j.progress * 100)}%
                         </span>
                       </div>
                     </td>
-                    <td className="px-5 py-3 font-mono text-xs text-obsidian-on-surface-variant tabular-nums">
+                    <td className="mono px-5 py-3 text-xs tabular-nums text-ledger-on-surface-variant">
                       {j.total_memories}
                     </td>
                     <td className="px-5 py-3">
                       <span
                         className={
                           j.flagged_count > 0
-                            ? 'font-medium text-[#ffb95f] tabular-nums'
-                            : 'text-obsidian-outline tabular-nums'
+                            ? 'mono text-xs font-semibold tabular-nums text-ledger-tertiary'
+                            : 'mono text-xs tabular-nums text-ledger-outline'
                         }
                       >
                         {j.flagged_count}
@@ -239,14 +225,14 @@ export default function Validations() {
                       <span
                         className={
                           j.quarantined_count > 0
-                            ? 'font-medium text-[#ffb4ab] tabular-nums'
-                            : 'text-obsidian-outline tabular-nums'
+                            ? 'mono text-xs font-semibold tabular-nums text-ledger-error'
+                            : 'mono text-xs tabular-nums text-ledger-outline'
                         }
                       >
                         {j.quarantined_count}
                       </span>
                     </td>
-                    <td className="px-5 py-3 text-xs text-obsidian-outline">
+                    <td className="mono px-5 py-3 text-xs text-ledger-on-surface-variant">
                       {formatTimestamp(j.created_at)}
                     </td>
                     <td className="px-5 py-3">

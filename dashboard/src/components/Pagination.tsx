@@ -16,7 +16,7 @@ export default function Pagination({ page, pageSize, total, onPageChange }: Pagi
 
   return (
     <div className="flex items-center justify-between px-1 py-2">
-      <span className="text-xs text-obsidian-on-surface-variant tabular-nums">
+      <span className="text-xs text-ledger-on-surface-variant tabular-nums">
         Showing {start}&ndash;{end} of {total}
       </span>
       <div className="flex items-center gap-1">
@@ -28,7 +28,7 @@ export default function Pagination({ page, pageSize, total, onPageChange }: Pagi
           <ChevronLeft size={14} />
           <span>Previous</span>
         </button>
-        <span className="px-2 text-xs text-obsidian-on-surface-variant tabular-nums">
+        <span className="px-2 text-xs text-ledger-on-surface-variant tabular-nums">
           {page} / {totalPages}
         </span>
         <button

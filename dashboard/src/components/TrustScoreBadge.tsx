@@ -4,33 +4,32 @@ interface Props {
   size?: 'sm' | 'md'
 }
 
+/**
+ * Inked trust meter: a ruled track with a solid ink fill and a
+ * mono numeral. Color shifts with the verdict band.
+ */
 export default function TrustScoreBadge({ score, showValue = true, size = 'sm' }: Props) {
   const pct = Math.round(score * 100)
 
-  // Gradient stops: red (0%) -> tertiary/amber (50%) -> secondary/emerald (100%)
   const barColor =
-    pct >= 80
-      ? 'bg-gradient-to-r from-[#4edea3] to-[#4edea3]'
-      : pct >= 50
-        ? 'bg-gradient-to-r from-[#ffb95f] to-[#4edea3]'
-        : pct >= 30
-          ? 'bg-gradient-to-r from-[#ffb4ab] to-[#ffb95f]'
-          : 'bg-gradient-to-r from-[#ffb4ab] to-[#ffb4ab]'
+    pct >= 70 ? 'bg-ledger-secondary' : pct >= 50 ? 'bg-ledger-tertiary' : 'bg-ledger-error'
+  const textColor =
+    pct >= 70 ? 'text-ledger-secondary' : pct >= 50 ? 'text-ledger-tertiary' : 'text-ledger-error'
 
-  const trackClass = size === 'md' ? 'h-1.5 w-20' : 'h-1 w-14'
+  const trackClass = size === 'md' ? 'h-[7px] w-20' : 'h-[5px] w-14'
 
   return (
     <div className="inline-flex items-center gap-2">
-      <div className={`${trackClass} rounded-full bg-obsidian-surface-highest overflow-hidden`}>
+      <div
+        className={`${trackClass} relative overflow-hidden rounded-full border border-ledger-outline-variant bg-ledger-surface-lowest`}
+      >
         <div
           className={`h-full rounded-full transition-all duration-500 ${barColor}`}
           style={{ width: `${pct}%` }}
         />
       </div>
       {showValue && (
-        <span className="text-xs font-medium tabular-nums text-obsidian-on-surface-variant">
-          {pct}%
-        </span>
+        <span className={`mono text-xs font-semibold tabular-nums ${textColor}`}>{pct}%</span>
       )}
     </div>
   )

@@ -1,24 +1,29 @@
 import { useQuery } from '@tanstack/react-query'
 import { fetchStalenessHeatmap, fetchHighRisk, fetchHealthScore, fetchMemoryStats, fetchValidations } from '../api/client'
 import TrustScoreBadge from '../components/TrustScoreBadge'
+import PageHeader from '../components/PageHeader'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area, CartesianGrid } from 'recharts'
 import ErrorBanner from '../components/ErrorBanner'
 import { TrendingUp, Activity, Database } from 'lucide-react'
 import { titleCase, formatRelative } from '../utils/time'
 
-/* ─── color constants matching Obsidian Intelligence tokens ─── */
-const C = {
-  primary: '#adc6ff',
-  primaryBright: '#367ef2',
-  secondary: '#4edea3',
-  tertiary: '#ffb95f',
-  error: '#ffb4ab',
-  onSurface: '#dae2fd',
-  onSurfaceVariant: '#c5c6cd',
-  surfaceContainer: '#171f33',
-  surfaceHigh: '#222a3d',
-  surfaceHighest: '#2d3449',
-  background: '#0b1326',
+/* ─── The Trust Ledger ink palette for charts ─── */
+const INK = {
+  blue: '#23408e',
+  green: '#1e7a4c',
+  amber: '#a66102',
+  red: '#a8322d',
+  muted: '#5c574b',
+}
+
+const AXIS_TICK = { fill: INK.muted, fontSize: 11, fontFamily: "'Spline Sans Mono', monospace" }
+
+const TOOLTIP_STYLE = {
+  backgroundColor: '#fdfcf8',
+  border: '1px solid #d8d2c2',
+  borderRadius: 6,
+  color: '#1d1b14',
+  fontSize: 12,
 }
 
 export default function Analytics() {
@@ -39,15 +44,7 @@ export default function Analytics() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Header */}
-      <div>
-        <h1 className="font-headline text-2xl font-bold" style={{ color: C.onSurface }}>
-          Analytics
-        </h1>
-        <p className="mt-1 text-sm" style={{ color: C.onSurfaceVariant }}>
-          Memory health insights and staleness patterns
-        </p>
-      </div>
+      <PageHeader no="03" title="Analytics" description="Staleness patterns and validation trends" />
 
       {(health.isError || stats.isError || heatmap.isError || risk.isError) && (
         <ErrorBanner
@@ -62,87 +59,66 @@ export default function Analytics() {
           icon={<TrendingUp size={18} />}
           label="Avg Trust Score"
           value={h ? `${Math.round(h.avg_trust_score * 100)}%` : '--'}
-          color={C.secondary}
+          colorClass="text-ledger-secondary"
         />
         <BigStat
           icon={<Activity size={18} />}
           label="Staleness Rate"
           value={heatmap.data ? `${computeOverallStaleness(heatmap.data)}%` : '--'}
-          color={C.tertiary}
+          colorClass="text-ledger-tertiary"
         />
         <BigStat
           icon={<Database size={18} />}
           label="Total Memories"
           value={s ? String(s.total) : '--'}
-          color={C.primary}
+          colorClass="text-ledger-primary"
         />
       </div>
 
       {/* ─── Trust Distribution Bar Chart + Staleness Heatmap ─── */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
         {/* Trust Score Distribution */}
-        <div
-          className="lg:col-span-7 rounded-xl"
-          style={{ backgroundColor: C.surfaceContainer, boxShadow: 'var(--shadow-ambient)' }}
-        >
-          <div className="px-5 py-3 rounded-t-xl" style={{ backgroundColor: C.surfaceHigh }}>
-            <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: C.onSurfaceVariant }}>
-              Trust Score Distribution
-            </span>
-          </div>
+        <div className="card lg:col-span-7">
+          <div className="card-header">Trust Score Distribution</div>
           <div className="p-5">
             {trustDistribution.length > 0 ? (
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={trustDistribution} barCategoryGap="20%">
                   <XAxis
                     dataKey="range"
-                    tick={{ fill: C.onSurfaceVariant, fontSize: 11 }}
+                    tick={AXIS_TICK}
                     axisLine={false}
                     tickLine={false}
                   />
                   <YAxis
-                    tick={{ fill: C.onSurfaceVariant, fontSize: 11 }}
+                    tick={AXIS_TICK}
                     axisLine={false}
                     tickLine={false}
                     width={30}
                   />
                   <Tooltip
-                    contentStyle={{
-                      backgroundColor: C.surfaceHigh,
-                      border: 'none',
-                      borderRadius: '8px',
-                      color: C.onSurface,
-                      fontSize: '12px',
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-                    }}
-                    cursor={{ fill: 'rgba(173, 198, 255, 0.05)' }}
+                    contentStyle={TOOLTIP_STYLE}
+                    cursor={{ fill: 'rgba(29, 27, 20, 0.04)' }}
                   />
                   <Bar
                     dataKey="count"
-                    radius={[4, 4, 0, 0]}
-                    fill={C.primary}
+                    radius={[3, 3, 0, 0]}
+                    fill={INK.blue}
                     name="Memories"
                   />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
               <div className="flex h-[220px] items-center justify-center">
-                <p className="text-xs" style={{ color: C.onSurfaceVariant }}>No data available</p>
+                <p className="text-xs text-ledger-on-surface-variant">No data available</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Staleness Heatmap Grid */}
-        <div
-          className="lg:col-span-5 rounded-xl"
-          style={{ backgroundColor: C.surfaceContainer, boxShadow: 'var(--shadow-ambient)' }}
-        >
-          <div className="px-5 py-3 rounded-t-xl" style={{ backgroundColor: C.surfaceHigh }}>
-            <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: C.onSurfaceVariant }}>
-              Staleness Heatmap
-            </span>
-          </div>
+        <div className="card lg:col-span-5">
+          <div className="card-header">Staleness Heatmap</div>
           <div className="p-5">
             {heatmap.data?.length ? (
               <div className="space-y-3">
@@ -150,16 +126,13 @@ export default function Analytics() {
                   const rate = entry.staleness_rate ?? 0
                   return (
                     <div key={entry.fact_type} className="flex items-center gap-3">
-                      <span
-                        className="w-24 truncate text-xs font-medium"
-                        style={{ color: C.onSurfaceVariant }}
-                      >
+                      <span className="w-24 truncate text-xs font-medium text-ledger-on-surface-variant">
                         {titleCase(entry.fact_type)}
                       </span>
                       <div className="flex-1 flex gap-1">
                         {renderHeatmapBlocks(rate)}
                       </div>
-                      <span className="w-10 text-right text-xs font-mono" style={{ color: C.onSurfaceVariant }}>
+                      <span className="mono w-10 text-right text-xs tabular-nums text-ledger-on-surface-variant">
                         {rate > 0 ? `${Math.round(rate * 100)}%` : '--'}
                       </span>
                     </div>
@@ -168,7 +141,7 @@ export default function Analytics() {
               </div>
             ) : (
               <div className="flex h-[180px] items-center justify-center">
-                <p className="text-xs" style={{ color: C.onSurfaceVariant }}>Not enough data yet</p>
+                <p className="text-xs text-ledger-on-surface-variant">Not enough data yet</p>
               </div>
             )}
           </div>
@@ -176,53 +149,32 @@ export default function Analytics() {
       </div>
 
       {/* ─── Health Telemetry Line Chart ─── */}
-      <div
-        className="rounded-xl"
-        style={{ backgroundColor: C.surfaceContainer, boxShadow: 'var(--shadow-ambient)' }}
-      >
-        <div className="px-5 py-3 rounded-t-xl" style={{ backgroundColor: C.surfaceHigh }}>
-          <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: C.onSurfaceVariant }}>
-            Health Telemetry
-          </span>
-        </div>
+      <div className="card">
+        <div className="card-header">Health Telemetry</div>
         <div className="p-5">
           {telemetry.length > 0 ? (
             <ResponsiveContainer width="100%" height={200}>
               <AreaChart data={telemetry}>
-                <defs>
-                  <linearGradient id="telemetryGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={C.secondary} stopOpacity={0.3} />
-                    <stop offset="95%" stopColor={C.secondary} stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid stroke="rgba(68, 71, 77, 0.15)" strokeDasharray="3 3" />
+                <CartesianGrid stroke="rgba(29, 27, 20, 0.08)" strokeDasharray="3 3" />
                 <XAxis
                   dataKey="date"
-                  tick={{ fill: C.onSurfaceVariant, fontSize: 11 }}
+                  tick={AXIS_TICK}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fill: C.onSurfaceVariant, fontSize: 11 }}
+                  tick={AXIS_TICK}
                   axisLine={false}
                   tickLine={false}
                   width={30}
                 />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: C.surfaceHigh,
-                    border: 'none',
-                    borderRadius: '8px',
-                    color: C.onSurface,
-                    fontSize: '12px',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-                  }}
-                />
+                <Tooltip contentStyle={TOOLTIP_STYLE} />
                 <Area
                   type="monotone"
                   dataKey="validated"
-                  stroke={C.secondary}
-                  fill="url(#telemetryGrad)"
+                  stroke={INK.green}
+                  fill={INK.green}
+                  fillOpacity={0.15}
                   strokeWidth={2}
                   name="Validated"
                   dot={false}
@@ -230,7 +182,7 @@ export default function Analytics() {
                 <Area
                   type="monotone"
                   dataKey="flagged"
-                  stroke={C.tertiary}
+                  stroke={INK.amber}
                   fill="none"
                   strokeWidth={2}
                   strokeDasharray="4 4"
@@ -241,22 +193,17 @@ export default function Analytics() {
             </ResponsiveContainer>
           ) : (
             <div className="flex h-[200px] items-center justify-center">
-              <p className="text-xs" style={{ color: C.onSurfaceVariant }}>No telemetry data yet</p>
+              <p className="text-xs text-ledger-on-surface-variant">No telemetry data yet</p>
             </div>
           )}
         </div>
       </div>
 
       {/* ─── High-Risk Memories Table ─── */}
-      <div
-        className="rounded-xl overflow-hidden"
-        style={{ backgroundColor: C.surfaceContainer, boxShadow: 'var(--shadow-ambient)' }}
-      >
-        <div className="px-5 py-3 flex items-center justify-between" style={{ backgroundColor: C.surfaceHigh }}>
-          <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: C.onSurfaceVariant }}>
-            High-Risk Memories
-          </span>
-          <span className="text-[10px] font-normal tracking-normal" style={{ color: C.onSurfaceVariant }}>
+      <div className="card overflow-hidden">
+        <div className="card-header justify-between">
+          <span>High-Risk Memories</span>
+          <span className="normal-case tracking-normal font-body font-normal text-[10px] text-ledger-outline">
             Low trust + high retrieval = highest risk
           </span>
         </div>
@@ -264,38 +211,29 @@ export default function Analytics() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr style={{ backgroundColor: C.surfaceHigh }}>
-                  <th className="px-5 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider" style={{ color: C.onSurfaceVariant }}>Content</th>
-                  <th className="px-5 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider w-28" style={{ color: C.onSurfaceVariant }}>Type</th>
-                  <th className="px-5 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider w-20" style={{ color: C.onSurfaceVariant }}>Trust</th>
-                  <th className="px-5 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wider w-20" style={{ color: C.onSurfaceVariant }}>Retrievals</th>
-                  <th className="px-5 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wider w-20" style={{ color: C.onSurfaceVariant }}>Risk</th>
+                <tr className="table-header">
+                  <th className="mono px-5 py-2.5 text-left text-[10px] uppercase tracking-[0.12em] text-ledger-on-surface-variant">Content</th>
+                  <th className="mono w-28 px-5 py-2.5 text-left text-[10px] uppercase tracking-[0.12em] text-ledger-on-surface-variant">Type</th>
+                  <th className="mono w-20 px-5 py-2.5 text-left text-[10px] uppercase tracking-[0.12em] text-ledger-on-surface-variant">Trust</th>
+                  <th className="mono w-20 px-5 py-2.5 text-right text-[10px] uppercase tracking-[0.12em] text-ledger-on-surface-variant">Retrievals</th>
+                  <th className="mono w-20 px-5 py-2.5 text-right text-[10px] uppercase tracking-[0.12em] text-ledger-on-surface-variant">Risk</th>
                 </tr>
               </thead>
               <tbody>
                 {risk.data.map((m) => (
-                  <tr key={m.id} className="transition-colors hover:bg-[#222a3d]">
-                    <td className="max-w-sm truncate px-5 py-3" style={{ color: C.onSurface }}>{m.content}</td>
+                  <tr key={m.id} className="table-row">
+                    <td className="max-w-sm truncate px-5 py-3 text-ledger-on-surface">{m.content}</td>
                     <td className="px-5 py-3">
-                      <span
-                        className="rounded-sm px-2 py-0.5 text-[11px] font-medium"
-                        style={{ backgroundColor: C.surfaceHighest, color: C.onSurfaceVariant }}
-                      >
+                      <span className="mono rounded-sharp bg-ledger-surface-high px-2 py-0.5 text-[11px] text-ledger-on-surface-variant">
                         {titleCase(m.fact_type)}
                       </span>
                     </td>
                     <td className="px-5 py-3"><TrustScoreBadge score={m.trust_score} /></td>
-                    <td className="px-5 py-3 text-right font-mono" style={{ color: C.onSurfaceVariant }}>
+                    <td className="mono px-5 py-3 text-right tabular-nums text-ledger-on-surface-variant">
                       {m.retrieval_count}
                     </td>
                     <td className="px-5 py-3 text-right">
-                      <span
-                        className="inline-flex items-center rounded-sm px-2.5 py-1 text-xs font-bold"
-                        style={{
-                          backgroundColor: 'rgba(255, 180, 171, 0.12)',
-                          color: C.error,
-                        }}
-                      >
+                      <span className="stamp text-ledger-error bg-ledger-error-container/70">
                         {m.risk_score}
                       </span>
                     </td>
@@ -306,7 +244,7 @@ export default function Analytics() {
           </div>
         ) : (
           <div className="flex h-28 items-center justify-center">
-            <p className="text-sm" style={{ color: C.onSurfaceVariant }}>No high-risk memories detected</p>
+            <p className="text-sm text-ledger-on-surface-variant">No high-risk memories detected</p>
           </div>
         )}
       </div>
@@ -314,30 +252,27 @@ export default function Analytics() {
   )
 }
 
-/* ─── Big stat card with Space Grotesk numbers ─── */
+/* ─── Big stat card: ledger entry with serif numeral ─── */
 function BigStat({
   icon,
   label,
   value,
-  color,
+  colorClass,
 }: {
   icon: React.ReactNode
   label: string
   value: string
-  color: string
+  colorClass: string
 }) {
   return (
-    <div
-      className="rounded-xl p-6 flex flex-col gap-3"
-      style={{ backgroundColor: C.surfaceContainer, boxShadow: 'var(--shadow-ambient)' }}
-    >
+    <div className="card flex flex-col gap-3 p-6">
       <div className="flex items-center gap-2">
-        <span style={{ color }}>{icon}</span>
-        <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: C.onSurfaceVariant }}>
+        <span className={colorClass}>{icon}</span>
+        <span className="mono text-[10px] uppercase tracking-[0.12em] text-ledger-on-surface-variant">
           {label}
         </span>
       </div>
-      <span className="font-headline text-4xl font-bold" style={{ color }}>
+      <span className={`font-headline text-4xl font-semibold tabular-nums ${colorClass}`}>
         {value}
       </span>
     </div>
@@ -348,25 +283,18 @@ function BigStat({
 function renderHeatmapBlocks(rate: number) {
   const blockCount = 10
   const filledCount = Math.round(rate * blockCount)
+  const filledClass =
+    rate <= 0.3 ? 'bg-ledger-secondary' : rate <= 0.6 ? 'bg-ledger-tertiary' : 'bg-ledger-error'
   const blocks = []
 
   for (let i = 0; i < blockCount; i++) {
-    let color: string
-    if (i >= filledCount) {
-      color = C.surfaceHighest
-    } else if (rate <= 0.3) {
-      color = C.secondary
-    } else if (rate <= 0.6) {
-      color = C.tertiary
-    } else {
-      color = C.error
-    }
-
+    const filled = i < filledCount
     blocks.push(
       <div
         key={i}
-        className="h-4 flex-1 rounded-sm transition-colors"
-        style={{ backgroundColor: color, opacity: i < filledCount ? 1 : 0.3 }}
+        className={`h-4 flex-1 rounded-[2px] transition-colors ${
+          filled ? filledClass : 'bg-ledger-surface-highest opacity-40'
+        }`}
       />
     )
   }

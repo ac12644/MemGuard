@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchQuarantine, restoreQuarantine, approveRemediation, verifyAuditIntegrity } from '../api/client'
 import StatusBadge from '../components/StatusBadge'
+import PageHeader from '../components/PageHeader'
 import { RotateCcw, Check, ShieldAlert, ShieldCheck } from 'lucide-react'
 
 function IntegrityGauge({ valid, checked }: { valid: boolean; checked: number }) {
@@ -9,7 +10,8 @@ function IntegrityGauge({ valid, checked }: { valid: boolean; checked: number })
   const circumference = 2 * Math.PI * radius
   const pct = valid ? 1 : 0.5
   const offset = circumference * (1 - pct)
-  const color = valid ? '#4edea3' : '#ffb4ab'
+  const strokeClass = valid ? 'stroke-ledger-secondary' : 'stroke-ledger-error'
+  const textClass = valid ? 'text-ledger-secondary' : 'text-ledger-error'
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -20,7 +22,7 @@ function IntegrityGauge({ valid, checked }: { valid: boolean; checked: number })
             cy="50"
             r={radius}
             fill="none"
-            stroke="#222a3d"
+            className="stroke-ledger-surface-highest"
             strokeWidth="6"
           />
           <circle
@@ -28,12 +30,11 @@ function IntegrityGauge({ valid, checked }: { valid: boolean; checked: number })
             cy="50"
             r={radius}
             fill="none"
-            stroke={color}
+            className={`${strokeClass} transition-all duration-1000`}
             strokeWidth="6"
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={offset}
-            className="transition-all duration-1000"
             style={
               {
                 '--circumference': circumference,
@@ -44,17 +45,17 @@ function IntegrityGauge({ valid, checked }: { valid: boolean; checked: number })
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
           {valid ? (
-            <ShieldCheck size={20} className="text-[#4edea3]" />
+            <ShieldCheck size={20} className="text-ledger-secondary" />
           ) : (
-            <ShieldAlert size={20} className="text-[#ffb4ab]" />
+            <ShieldAlert size={20} className="text-ledger-error" />
           )}
         </div>
       </div>
       <div className="text-center">
-        <p className="text-xs font-semibold" style={{ color }}>
+        <p className={`mono text-[10px] font-semibold uppercase tracking-[0.12em] ${textClass}`}>
           {valid ? 'Chain Valid' : 'Chain Broken'}
         </p>
-        <p className="text-[11px] text-obsidian-outline">{checked} entries checked</p>
+        <p className="mono text-[11px] tabular-nums text-ledger-on-surface-variant">{checked} entries checked</p>
       </div>
     </div>
   )
@@ -90,13 +91,7 @@ export default function Quarantine() {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* Header */}
-      <div>
-        <h1 className="font-headline text-2xl font-bold text-obsidian-on-surface">Quarantine</h1>
-        <p className="mt-1 text-sm text-obsidian-on-surface-variant">
-          Review and manage quarantined memories
-        </p>
-      </div>
+      <PageHeader no="05" title="Quarantine" description="Records pulled from circulation pending review" />
 
       <div className="flex flex-col gap-6 lg:flex-row">
         {/* Quarantine entries */}
@@ -113,11 +108,11 @@ export default function Quarantine() {
           ) : !entries?.length ? (
             <div className="card flex h-48 items-center justify-center">
               <div className="text-center">
-                <ShieldAlert size={28} className="mx-auto text-obsidian-outline" />
-                <p className="mt-2 text-sm text-obsidian-on-surface-variant">
+                <ShieldAlert size={28} className="mx-auto text-ledger-outline" />
+                <p className="mt-2 text-sm text-ledger-on-surface-variant">
                   No quarantined memories
                 </p>
-                <p className="mt-1 text-xs text-obsidian-outline">
+                <p className="mt-1 text-xs text-ledger-outline">
                   Memories with trust scores below 0.3 are automatically quarantined
                 </p>
               </div>
@@ -126,34 +121,39 @@ export default function Quarantine() {
             entries.map((e) => (
               <div
                 key={e.id}
-                className="card p-5 transition-colors hover:bg-obsidian-surface-high"
+                className="card border-l-2 border-l-ledger-error p-5 transition-all hover:shadow-lifted hover:-translate-y-px"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    {/* Original content */}
-                    <p className="text-sm font-medium leading-relaxed text-obsidian-on-surface">
-                      {e.original_content}
+                    {/* Original content — impounded record */}
+                    <p className="mono mb-1 text-[10px] uppercase tracking-[0.12em] text-ledger-on-surface-variant">
+                      Original Record
                     </p>
+                    <div className="rounded-sharp border border-ledger-outline-variant bg-ledger-surface-low p-3">
+                      <p className="mono leading-relaxed text-ledger-on-surface">
+                        {e.original_content}
+                      </p>
+                    </div>
 
                     {/* Meta row */}
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <div className="mt-2.5 flex flex-wrap items-center gap-2">
                       <StatusBadge status={e.reason} />
-                      <span className="text-[11px] text-obsidian-outline tabular-nums">
+                      <span className="mono text-[11px] tabular-nums text-ledger-on-surface-variant">
                         Trust was {Math.round(e.original_trust_score * 100)}%
                       </span>
-                      <span className="text-obsidian-surface-highest">|</span>
-                      <span className="text-[11px] text-obsidian-outline">
+                      <span className="text-ledger-outline-variant">|</span>
+                      <span className="mono text-[11px] text-ledger-on-surface-variant">
                         {new Date(e.created_at).toLocaleDateString()}
                       </span>
                     </div>
 
                     {/* Remediation suggestion */}
                     {e.remediated_content && (
-                      <div className="mt-3 rounded-sm bg-[#4edea3]/8 px-4 py-3">
-                        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#4edea3] mb-1">
+                      <div className="mt-3 rounded-sharp border border-ledger-outline-variant bg-ledger-surface-low p-3">
+                        <p className="mono mb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-ledger-secondary">
                           Suggested Fix
                         </p>
-                        <p className="text-sm text-[#4edea3]/90">{e.remediated_content}</p>
+                        <p className="mono leading-relaxed text-ledger-on-surface">{e.remediated_content}</p>
                       </div>
                     )}
                   </div>
@@ -187,7 +187,7 @@ export default function Quarantine() {
         {/* Integrity Gauge Sidebar */}
         <div className="w-full lg:w-56 shrink-0">
           <div className="card p-5 flex flex-col items-center gap-4">
-            <h3 className="font-headline text-xs font-semibold uppercase tracking-wider text-obsidian-on-surface-variant">
+            <h3 className="mono text-[10px] font-semibold uppercase tracking-[0.12em] text-ledger-on-surface-variant">
               Audit Integrity
             </h3>
 
@@ -205,7 +205,7 @@ export default function Quarantine() {
                       cy="50"
                       r={40}
                       fill="none"
-                      stroke="#222a3d"
+                      className="stroke-ledger-surface-highest"
                       strokeWidth="6"
                     />
                     {integrityLoading && (
@@ -214,20 +214,19 @@ export default function Quarantine() {
                         cy="50"
                         r={40}
                         fill="none"
-                        stroke="#adc6ff"
+                        className="stroke-ledger-primary animate-spin origin-center"
                         strokeWidth="6"
                         strokeLinecap="round"
                         strokeDasharray={2 * Math.PI * 40}
                         strokeDashoffset={2 * Math.PI * 40 * 0.75}
-                        className="animate-spin origin-center"
                       />
                     )}
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <ShieldAlert size={20} className="text-obsidian-outline" />
+                    <ShieldAlert size={20} className="text-ledger-outline" />
                   </div>
                 </div>
-                <p className="text-[11px] text-obsidian-outline">Not yet verified</p>
+                <p className="mono text-[11px] text-ledger-on-surface-variant">Not yet verified</p>
               </div>
             )}
 

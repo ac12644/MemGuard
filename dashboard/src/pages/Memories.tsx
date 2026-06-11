@@ -6,6 +6,7 @@ import TrustScoreBadge from '../components/TrustScoreBadge'
 import StatusBadge from '../components/StatusBadge'
 import ErrorBanner from '../components/ErrorBanner'
 import Pagination from '../components/Pagination'
+import PageHeader from '../components/PageHeader'
 import { Search, Database, TrendingUp, ShieldCheck, Clock } from 'lucide-react'
 import { formatRelative, titleCase } from '../utils/time'
 
@@ -43,13 +44,7 @@ export default function Memories() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Header */}
-      <div>
-        <h1 className="font-headline text-2xl font-bold text-obsidian-on-surface">Tracked Memories</h1>
-        <p className="mt-1 text-sm text-obsidian-on-surface-variant">
-          Browse and filter tracked memories with trust scores
-        </p>
-      </div>
+      <PageHeader no="02" title="Memories" description="Every tracked fact, with its trust standing" />
 
       {memoriesQuery.isError && (
         <ErrorBanner message={(memoriesQuery.error as Error).message} onRetry={() => memoriesQuery.refetch()} />
@@ -58,7 +53,7 @@ export default function Memories() {
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-obsidian-outline pointer-events-none" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ledger-outline pointer-events-none" />
           <input
             type="text"
             value={search}
@@ -107,11 +102,11 @@ export default function Memories() {
       ) : !filtered.length ? (
         <div className="card flex h-48 items-center justify-center">
           <div className="text-center max-w-xs">
-            <Database size={28} className="mx-auto" style={{ color: 'var(--color-outline)' }} />
-            <p className="mt-3 text-sm font-medium text-obsidian-on-surface">
+            <Database size={28} className="mx-auto text-ledger-outline" />
+            <p className="mt-3 text-sm font-medium text-ledger-on-surface">
               No memories tracked yet
             </p>
-            <p className="mt-1 text-xs text-obsidian-on-surface-variant">
+            <p className="mt-1 text-xs text-ledger-on-surface-variant">
               Connect a memory system and sync to get started.
             </p>
             <button
@@ -128,14 +123,14 @@ export default function Memories() {
             <div
               key={m.id}
               onClick={() => setExpanded(expanded === m.id ? null : m.id)}
-              className={`card p-5 transition-all hover:bg-obsidian-surface-high group cursor-pointer ${expanded === m.id ? 'ring-1 ring-[#adc6ff]/20' : ''}`}
+              className={`card p-5 transition-all hover:shadow-lifted hover:-translate-y-px group cursor-pointer ${expanded === m.id ? 'ring-1 ring-ledger-primary/25' : ''}`}
             >
               {/* Content */}
               <div className="flex items-start gap-2">
-                <p className={`flex-1 text-sm leading-relaxed text-obsidian-on-surface min-h-[2.5rem] ${expanded === m.id ? '' : 'line-clamp-2'}`}>
+                <p className={`flex-1 text-sm leading-relaxed text-ledger-on-surface min-h-[2.5rem] ${expanded === m.id ? '' : 'line-clamp-2'}`}>
                   {m.content}
                 </p>
-                <span className={`shrink-0 mt-0.5 text-obsidian-outline transition-transform ${expanded === m.id ? 'rotate-180' : ''}`}>
+                <span className={`shrink-0 mt-0.5 text-ledger-outline transition-transform ${expanded === m.id ? 'rotate-180' : ''}`}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
                 </span>
               </div>
@@ -143,7 +138,7 @@ export default function Memories() {
               {/* Badges row */}
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 {m.fact_type && (
-                  <span className="rounded-sm bg-obsidian-surface-highest px-2 py-0.5 text-[11px] font-medium text-obsidian-on-surface-variant">
+                  <span className="mono rounded-sharp border border-ledger-outline-variant bg-ledger-surface-low px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] text-ledger-on-surface-variant">
                     {titleCase(m.fact_type)}
                   </span>
                 )}
@@ -156,7 +151,7 @@ export default function Memories() {
               </div>
 
               {/* Footer meta */}
-              <div className="mt-3 flex items-center justify-between text-[11px] text-obsidian-outline">
+              <div className="mono mt-3 flex items-center justify-between text-[11px] text-ledger-on-surface-variant">
                 <span className="tabular-nums">{m.retrieval_count} retrievals</span>
                 <span>
                   {m.last_validated_at
@@ -175,31 +170,31 @@ export default function Memories() {
       {/* Bottom Stats Bar */}
       {stats && (
         <div className="card flex flex-wrap items-center justify-between gap-4 px-6 py-4">
-          <div className="flex items-center gap-2">
-            <Database size={14} className="text-obsidian-primary" />
-            <span className="text-xs text-obsidian-on-surface-variant">Total</span>
-            <span className="font-headline text-sm font-semibold text-obsidian-on-surface tabular-nums">
+          <div className="flex items-center gap-2.5">
+            <Database size={14} className="text-ledger-primary" />
+            <span className="ledger-no">Total</span>
+            <span className="font-headline text-lg font-semibold text-ledger-on-surface tabular-nums">
               {stats.total}
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <TrendingUp size={14} className="text-[#4edea3]" />
-            <span className="text-xs text-obsidian-on-surface-variant">Avg Trust</span>
-            <span className="font-headline text-sm font-semibold text-obsidian-on-surface tabular-nums">
+          <div className="flex items-center gap-2.5">
+            <TrendingUp size={14} className="text-ledger-secondary" />
+            <span className="ledger-no">Avg Trust</span>
+            <span className="font-headline text-lg font-semibold text-ledger-on-surface tabular-nums">
               {Math.round(stats.avg_trust_score * 100)}%
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <ShieldCheck size={14} className="text-[#4edea3]" />
-            <span className="text-xs text-obsidian-on-surface-variant">Active</span>
-            <span className="font-headline text-sm font-semibold text-obsidian-on-surface tabular-nums">
+          <div className="flex items-center gap-2.5">
+            <ShieldCheck size={14} className="text-ledger-secondary" />
+            <span className="ledger-no">Active</span>
+            <span className="font-headline text-lg font-semibold text-ledger-secondary tabular-nums">
               {stats.active}
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <Clock size={14} className="text-[#ffb95f]" />
-            <span className="text-xs text-obsidian-on-surface-variant">Flagged</span>
-            <span className="font-headline text-sm font-semibold text-[#ffb95f] tabular-nums">
+          <div className="flex items-center gap-2.5">
+            <Clock size={14} className="text-ledger-tertiary" />
+            <span className="ledger-no">Flagged</span>
+            <span className="font-headline text-lg font-semibold text-ledger-tertiary tabular-nums">
               {stats.flagged}
             </span>
           </div>

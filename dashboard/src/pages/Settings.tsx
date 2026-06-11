@@ -4,30 +4,14 @@ import {
   fetchHealth, fetchSettings, updateSettings, resetSettings,
   regenerateApiKey, fetchApiKeyInfo, fetchMemoryStats, fetchConnectors, setAnthropicKey,
 } from '../api/client'
+import PageHeader from '../components/PageHeader'
 import StatusBadge from '../components/StatusBadge'
 import ErrorBanner from '../components/ErrorBanner'
 import { useToast } from '../components/Toast'
 import {
   Gauge, Save, RotateCcw, Check, Key, Copy, RefreshCw, BrainCircuit,
-  AlertTriangle, Server, Database, Wifi, Brain, Plug, Trash2, Shield,
+  AlertTriangle, Server, Database, Wifi, Brain, Plug, Trash2,
 } from 'lucide-react'
-
-const C = {
-  surface: '#0b1326',
-  surfaceLow: '#131b2e',
-  surfaceContainer: '#171f33',
-  surfaceHigh: '#222a3d',
-  surfaceHighest: '#2d3449',
-  primary: '#adc6ff',
-  primaryBright: '#367ef2',
-  secondary: '#4edea3',
-  tertiary: '#ffb95f',
-  error: '#ffb4ab',
-  errorContainer: '#93000a',
-  onSurface: '#dae2fd',
-  onSurfaceVariant: '#c5c6cd',
-  outline: '#8f9097',
-}
 
 const VALIDATION_FIELDS: Record<string, { label: string; desc: string; min: number; max: number; step: number; unit: string; group: 'threshold' | 'rate' }> = {
   trust_flag_threshold:        { label: 'Trust Flag Threshold',    desc: 'Memories below this are auto-flagged',        min: 0,  max: 1,    step: 0.05, unit: '',        group: 'threshold' },
@@ -103,149 +87,150 @@ export default function Settings() {
   const rateFields = Object.entries(VALIDATION_FIELDS).filter(([, m]) => m.group === 'rate')
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="font-headline text-2xl font-bold" style={{ color: C.onSurface }}>System Configuration</h1>
-          <p className="mt-1 text-sm" style={{ color: C.outline }}>Manage platform settings, security, and integrations</p>
-        </div>
-        <div className="flex gap-2 shrink-0">
-          {hasOverrides && (
-            <button onClick={() => reset.mutate()} disabled={reset.isPending} className="btn-ghost text-xs">
-              <RotateCcw size={13} /> Reset Defaults
+    <div className="space-y-6 animate-fade-in">
+      <PageHeader
+        no="08"
+        title="Settings"
+        description="Thresholds, keys, and platform configuration"
+        actions={
+          <>
+            {hasOverrides && (
+              <button onClick={() => reset.mutate()} disabled={reset.isPending} className="btn-ghost text-xs">
+                <RotateCcw size={13} /> Reset Defaults
+              </button>
+            )}
+            <button onClick={() => save.mutate()} disabled={!hasChanges || save.isPending} className="btn-primary">
+              {saved ? <><Check size={14} /> Saved</> : <><Save size={14} /> {save.isPending ? 'Saving...' : 'Save Changes'}</>}
             </button>
-          )}
-          <button onClick={() => save.mutate()} disabled={!hasChanges || save.isPending} className="btn-primary">
-            {saved ? <><Check size={14} /> Saved</> : <><Save size={14} /> {save.isPending ? 'Saving...' : 'Save Changes'}</>}
-          </button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {settingsQuery.isError && (
         <ErrorBanner message={(settingsQuery.error as Error).message} onRetry={() => settingsQuery.refetch()} />
       )}
 
       {/* ── Service Status ── */}
-      <section>
-        <SectionHeader icon={<Server size={15} />} color={C.primary} title="Service Status" desc="Real-time health of platform components" />
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="card">
+        <SectionStrip icon={<Server size={13} />} title="Service Status" desc="Real-time health of platform components" />
+        <div className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-3">
           <StatusCard icon={<Database size={16} />} label="Database" status={health?.database ?? 'unknown'} />
           <StatusCard icon={<Wifi size={16} />} label="Redis" status={health?.redis ?? 'unknown'} />
           <StatusCard icon={<Server size={16} />} label="API" status={health?.status ?? 'unknown'} />
         </div>
-      </section>
+      </div>
 
       {/* ── Tenant Overview ── */}
-      <section>
-        <SectionHeader icon={<Brain size={15} />} color={C.secondary} title="Tenant Overview" desc="Your organization and resource usage" />
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="card">
+        <SectionStrip icon={<Brain size={13} />} title="Tenant Overview" desc="Your organization and resource usage" />
+        <div className="grid grid-cols-2 gap-3 p-5 lg:grid-cols-4">
           <InfoCard label="Tenant" value={keyInfo?.tenant_name ?? 'Demo Tenant'} />
-          <InfoCard label="Total Memories" value={String(memStats?.total ?? 0)} accent={C.primary} />
-          <InfoCard label="Connectors" value={String(connectors?.length ?? 0)} accent={C.secondary} />
-          <InfoCard label="Avg Trust" value={memStats ? `${Math.round(memStats.avg_trust_score * 100)}%` : '-'} accent={memStats && memStats.avg_trust_score >= 0.7 ? C.secondary : C.tertiary} />
+          <InfoCard label="Total Memories" value={String(memStats?.total ?? 0)} accentClass="text-ledger-primary" />
+          <InfoCard label="Connectors" value={String(connectors?.length ?? 0)} accentClass="text-ledger-secondary" />
+          <InfoCard
+            label="Avg Trust"
+            value={memStats ? `${Math.round(memStats.avg_trust_score * 100)}%` : '-'}
+            accentClass={memStats && memStats.avg_trust_score >= 0.7 ? 'text-ledger-secondary' : 'text-ledger-tertiary'}
+          />
         </div>
-      </section>
+      </div>
 
       {/* ── Validation Thresholds ── */}
-      <section>
-        <SectionHeader icon={<Gauge size={15} />} color={C.primary} title="Validation Thresholds" desc="Control when memories are flagged or quarantined" />
-        <div className="card">
-          {isLoading ? (
-            <div className="p-5 space-y-4">{[...Array(2)].map((_, i) => <div key={i} className="shimmer h-20 rounded-lg" />)}</div>
-          ) : (
-            <div>
-              {thresholdFields.map(([key, meta]) => {
-                const value = form[key] ?? 0
-                const isDefault = settingsData?.defaults[key] === value
-                const pct = Math.round(value * 100)
-                const barColor = value >= 0.5 ? C.secondary : value >= 0.3 ? C.tertiary : C.error
-                return (
-                  <div key={key} className="px-5 py-4" style={{ borderBottom: `1px solid ${C.surfaceHigh}` }}>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium" style={{ color: C.onSurface }}>{meta.label}</p>
-                        {!isDefault && <CustomBadge />}
-                      </div>
-                      <span className="font-headline text-lg font-bold tabular-nums" style={{ color: barColor }}>{pct}%</span>
+      <div className="card">
+        <SectionStrip icon={<Gauge size={13} />} title="Validation Thresholds" desc="Control when memories are flagged or quarantined" />
+        {isLoading ? (
+          <div className="space-y-4 p-5">{[...Array(2)].map((_, i) => <div key={i} className="shimmer h-20" />)}</div>
+        ) : (
+          <div>
+            {thresholdFields.map(([key, meta]) => {
+              const value = form[key] ?? 0
+              const isDefault = settingsData?.defaults[key] === value
+              const pct = Math.round(value * 100)
+              const barClass = value >= 0.5 ? 'bg-ledger-secondary' : value >= 0.3 ? 'bg-ledger-tertiary' : 'bg-ledger-error'
+              const textClass = value >= 0.5 ? 'text-ledger-secondary' : value >= 0.3 ? 'text-ledger-tertiary' : 'text-ledger-error'
+              return (
+                <div key={key} className="border-b border-ledger-outline-variant px-5 py-4 last:border-b-0">
+                  <div className="mb-2 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-ledger-on-surface">{meta.label}</p>
+                      {!isDefault && <CustomBadge />}
                     </div>
-                    <p className="text-xs mb-3" style={{ color: C.outline }}>{meta.desc}</p>
-                    {/* Styled slider track */}
-                    <div className="relative h-2 rounded-full overflow-hidden" style={{ backgroundColor: C.surfaceHighest }}>
-                      <div className="absolute inset-y-0 left-0 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: barColor }} />
-                    </div>
-                    <input
-                      type="range" min={meta.min} max={meta.max} step={meta.step} value={value}
-                      onChange={(e) => setForm({ ...form, [key]: parseFloat(e.target.value) })}
-                      className="w-full mt-1 opacity-0 h-2 cursor-pointer absolute"
-                      style={{ position: 'relative' }}
-                    />
+                    <span className={`font-headline text-lg font-semibold tabular-nums ${textClass}`}>{pct}%</span>
                   </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
-      </section>
+                  <p className="mb-3 text-xs text-ledger-on-surface-variant">{meta.desc}</p>
+                  {/* Inked slider track */}
+                  <div className="relative h-2 overflow-hidden rounded-full border border-ledger-outline-variant bg-ledger-surface-highest">
+                    <div className={`absolute inset-y-0 left-0 rounded-full transition-all ${barClass}`} style={{ width: `${pct}%` }} />
+                  </div>
+                  <input
+                    type="range" min={meta.min} max={meta.max} step={meta.step} value={value}
+                    onChange={(e) => setForm({ ...form, [key]: parseFloat(e.target.value) })}
+                    className="w-full mt-1 opacity-0 h-2 cursor-pointer absolute"
+                    style={{ position: 'relative' }}
+                  />
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
 
       {/* ── Rate Limits & Performance ── */}
-      <section>
-        <SectionHeader icon={<Gauge size={15} />} color={C.tertiary} title="Rate Limits & Performance" desc="Control API call frequency and batch sizes" />
-        <div className="card">
-          {isLoading ? (
-            <div className="p-5 space-y-4">{[...Array(4)].map((_, i) => <div key={i} className="shimmer h-14 rounded-lg" />)}</div>
-          ) : (
-            <div>
-              {rateFields.map(([key, meta]) => {
-                const value = form[key] ?? 0
-                const isDefault = settingsData?.defaults[key] === value
-                return (
-                  <div key={key} className="flex items-center gap-6 px-5 py-3.5" style={{ borderBottom: `1px solid ${C.surfaceHigh}` }}>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium" style={{ color: C.onSurface }}>{meta.label}</p>
-                        {!isDefault && <CustomBadge />}
-                      </div>
-                      <p className="text-xs mt-0.5" style={{ color: C.outline }}>{meta.desc}</p>
+      <div className="card">
+        <SectionStrip icon={<Gauge size={13} />} title="Rate Limits & Performance" desc="Control API call frequency and batch sizes" />
+        {isLoading ? (
+          <div className="space-y-4 p-5">{[...Array(4)].map((_, i) => <div key={i} className="shimmer h-14" />)}</div>
+        ) : (
+          <div>
+            {rateFields.map(([key, meta]) => {
+              const value = form[key] ?? 0
+              const isDefault = settingsData?.defaults[key] === value
+              return (
+                <div key={key} className="flex items-center gap-6 border-b border-ledger-outline-variant px-5 py-3.5 last:border-b-0">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-ledger-on-surface">{meta.label}</p>
+                      {!isDefault && <CustomBadge />}
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <input
-                        type="number" min={meta.min} max={meta.max} step={meta.step} value={value}
-                        onChange={(e) => setForm({ ...form, [key]: parseInt(e.target.value) || 0 })}
-                        className="input-field w-20 text-center font-mono text-xs"
-                      />
-                      <span className="text-[11px] w-14" style={{ color: C.outline }}>{meta.unit}</span>
-                    </div>
+                    <p className="mt-0.5 text-xs text-ledger-on-surface-variant">{meta.desc}</p>
                   </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
-      </section>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <input
+                      type="number" min={meta.min} max={meta.max} step={meta.step} value={value}
+                      onChange={(e) => setForm({ ...form, [key]: parseInt(e.target.value) || 0 })}
+                      className="input-field w-20 text-center font-mono text-xs"
+                    />
+                    <span className="mono w-14 text-[10px] uppercase tracking-[0.09em] text-ledger-on-surface-variant">{meta.unit}</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
 
       {/* ── API Key Management ── */}
-      <section>
-        <SectionHeader icon={<Key size={15} />} color={C.primary} title="API Key" desc="Authenticate API requests and integrations" />
-        <div className="card p-5">
+      <div className="card">
+        <SectionStrip icon={<Key size={13} />} title="API Key" desc="Authenticate API requests and integrations" />
+        <div className="p-5">
           {/* New key success banner */}
           {newKey && (
-            <div className="flex items-start gap-3 rounded-lg px-4 py-3 mb-4" style={{ backgroundColor: 'rgba(78, 222, 163, 0.08)' }}>
-              <Check size={16} className="mt-0.5 shrink-0" style={{ color: C.secondary }} />
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium mb-1" style={{ color: C.secondary }}>New API key generated — copy it now</p>
-                <code className="block w-full rounded px-3 py-2 font-mono text-xs break-all" style={{ backgroundColor: C.surfaceLow, color: C.secondary }}>
+            <div className="mb-4 flex items-start gap-3 rounded-sharp border border-ledger-secondary/40 bg-ledger-secondary/[0.07] px-4 py-3">
+              <Check size={16} className="mt-0.5 shrink-0 text-ledger-secondary" />
+              <div className="min-w-0 flex-1">
+                <p className="mb-1 text-xs font-medium text-ledger-secondary">New API key generated — copy it now</p>
+                <code className="mono block w-full break-all rounded-sharp border border-ledger-outline-variant bg-ledger-surface-lowest px-3 py-2 text-xs text-ledger-secondary">
                   {newKey}
                 </code>
               </div>
-              <button onClick={copyKey} className="btn-ghost text-xs shrink-0">
+              <button onClick={copyKey} className="btn-ghost shrink-0 text-xs">
                 {copied ? <><Check size={12} /> Copied</> : <><Copy size={12} /> Copy</>}
               </button>
             </div>
           )}
 
           <div className="flex items-center gap-3">
-            <div className="flex-1 rounded px-3 py-2.5 font-mono text-sm" style={{ backgroundColor: C.surfaceLow, color: C.onSurfaceVariant }}>
+            <div className="mono flex-1 rounded-sharp border border-ledger-outline-variant bg-ledger-surface-lowest px-3 py-2.5 text-sm text-ledger-on-surface-variant">
               {keyInfo?.key_hash_prefix ?? '••••••••••••...'}
             </div>
             <button onClick={() => setShowRegenConfirm(true)} className="btn-danger shrink-0 text-xs">
@@ -254,11 +239,11 @@ export default function Settings() {
           </div>
 
           {showRegenConfirm && (
-            <div className="flex items-start gap-3 rounded-lg px-4 py-3 mt-3" style={{ backgroundColor: `rgba(147, 0, 10, 0.15)` }}>
-              <AlertTriangle size={16} className="mt-0.5 shrink-0" style={{ color: C.error }} />
+            <div className="mt-3 flex items-start gap-3 rounded-sharp border border-ledger-error/40 bg-ledger-error-container/60 px-4 py-3">
+              <AlertTriangle size={16} className="mt-0.5 shrink-0 text-ledger-error" />
               <div className="flex-1">
-                <p className="text-xs font-medium" style={{ color: C.error }}>This invalidates your current key immediately.</p>
-                <p className="text-xs mt-0.5 mb-3" style={{ color: C.outline }}>All integrations using it will stop working.</p>
+                <p className="text-xs font-medium text-ledger-error">This invalidates your current key immediately.</p>
+                <p className="mb-3 mt-0.5 text-xs text-ledger-on-surface-variant">All integrations using it will stop working.</p>
                 <div className="flex gap-2">
                   <button onClick={() => regenKey.mutate()} disabled={regenKey.isPending} className="btn-danger text-xs">
                     {regenKey.isPending ? 'Generating...' : 'Confirm Regenerate'}
@@ -269,26 +254,26 @@ export default function Settings() {
             </div>
           )}
         </div>
-      </section>
+      </div>
 
       {/* ── LLM Configuration ── */}
-      <section>
-        <SectionHeader icon={<BrainCircuit size={15} />} color={C.primary} title="LLM Configuration" desc="Anthropic API key for AI-powered validation strategies" />
-        <div className="card p-5">
+      <div className="card">
+        <SectionStrip icon={<BrainCircuit size={13} />} title="LLM Configuration" desc="Anthropic API key for AI-powered validation strategies" />
+        <div className="p-5">
           {hasLlmKey ? (
             <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded" style={{ backgroundColor: `${C.secondary}15` }}>
-                <Check size={15} style={{ color: C.secondary }} />
+              <div className="flex h-8 w-8 items-center justify-center rounded-sharp border border-ledger-secondary/40 bg-ledger-secondary/[0.07]">
+                <Check size={15} className="text-ledger-secondary" />
               </div>
               <div>
-                <p className="text-sm font-medium" style={{ color: C.secondary }}>Anthropic key configured</p>
-                <p className="text-xs" style={{ color: C.outline }}>Semantic Drift and Causal Chain strategies are available.</p>
+                <p className="text-sm font-medium text-ledger-secondary">Anthropic key configured</p>
+                <p className="text-xs text-ledger-on-surface-variant">Semantic Drift and Causal Chain strategies are available.</p>
               </div>
             </div>
           ) : (
             <>
-              <p className="text-sm mb-1" style={{ color: C.onSurface }}>Enter your Anthropic API key</p>
-              <p className="text-xs mb-4" style={{ color: C.outline }}>Required for Semantic Drift and Causal Chain validation strategies. Get a key at anthropic.com.</p>
+              <p className="mb-1 text-sm text-ledger-on-surface">Enter your Anthropic API key</p>
+              <p className="mb-4 text-xs text-ledger-on-surface-variant">Required for Semantic Drift and Causal Chain validation strategies. Get a key at anthropic.com.</p>
               <div className="flex gap-3">
                 <input
                   type="password"
@@ -309,41 +294,39 @@ export default function Settings() {
             </>
           )}
         </div>
-      </section>
+      </div>
 
       {/* ── Danger Zone ── */}
-      <section>
-        <SectionHeader icon={<AlertTriangle size={15} />} color={C.error} title="Danger Zone" desc="Irreversible actions" />
-        <div className="card" style={{ boxShadow: 'var(--shadow-ambient), inset 0 0 0 1px rgba(255, 180, 171, 0.1)' }}>
-          <DangerRow
-            icon={<Trash2 size={14} />}
-            title="Purge Audit Logs"
-            desc="Delete all audit trail entries. Chain integrity will reset."
-            action="Purge"
-          />
-          <DangerRow
-            icon={<Brain size={14} />}
-            title="Delete All Memories"
-            desc="Remove all tracked memories, validation results, and trust scores."
-            action="Delete All"
-          />
-          <DangerRow
-            icon={<Plug size={14} />}
-            title="Disconnect All Systems"
-            desc="Remove all connector configurations and stop syncing."
-            action="Disconnect"
-            last
-          />
-        </div>
-      </section>
+      <div className="card border-ledger-error/50">
+        <SectionStrip icon={<AlertTriangle size={13} />} title="Danger Zone" desc="Irreversible actions" danger />
+        <DangerRow
+          icon={<Trash2 size={14} />}
+          title="Purge Audit Logs"
+          desc="Delete all audit trail entries. Chain integrity will reset."
+          action="Purge"
+        />
+        <DangerRow
+          icon={<Brain size={14} />}
+          title="Delete All Memories"
+          desc="Remove all tracked memories, validation results, and trust scores."
+          action="Delete All"
+        />
+        <DangerRow
+          icon={<Plug size={14} />}
+          title="Disconnect All Systems"
+          desc="Remove all connector configurations and stop syncing."
+          action="Disconnect"
+          last
+        />
+      </div>
 
       {/* Footer branding */}
       <div className="flex items-center gap-3 py-4">
         <img src="/icon.svg" alt="" className="h-7 w-7" />
-        <span className="font-headline text-sm" style={{ color: '#c8d6e5' }}>
-          mem<span style={{ color: '#4edea3' }}>guard</span>
+        <span className="font-headline text-sm text-ledger-on-surface">
+          mem<span className="text-ledger-secondary">guard</span>
         </span>
-        <span className="text-xs" style={{ color: C.outline }}>v0.1.0</span>
+        <span className="mono text-xs text-ledger-on-surface-variant">v0.1.0</span>
       </div>
     </div>
   )
@@ -351,14 +334,14 @@ export default function Settings() {
 
 /* ── Reusable sub-components ── */
 
-function SectionHeader({ icon, color, title, desc }: { icon: React.ReactNode; color: string; title: string; desc: string }) {
+function SectionStrip({ icon, title, desc, danger }: { icon: React.ReactNode; title: string; desc: string; danger?: boolean }) {
   return (
-    <div className="flex items-center gap-2.5 mb-3">
-      <div className="flex h-7 w-7 items-center justify-center rounded" style={{ backgroundColor: `${color}15`, color }}>{icon}</div>
-      <div>
-        <h2 className="text-sm font-semibold" style={{ color: C.onSurface }}>{title}</h2>
-        <p className="text-[11px]" style={{ color: C.outline }}>{desc}</p>
-      </div>
+    <div className={`card-header ${danger ? 'text-ledger-error' : ''}`}>
+      {icon}
+      <span>{title}</span>
+      <span className="ml-auto hidden normal-case tracking-normal font-body font-normal text-[10px] text-ledger-outline sm:inline">
+        {desc}
+      </span>
     </div>
   )
 }
@@ -366,30 +349,30 @@ function SectionHeader({ icon, color, title, desc }: { icon: React.ReactNode; co
 function StatusCard({ icon, label, status }: { icon: React.ReactNode; label: string; status: string }) {
   const isHealthy = status === 'healthy'
   return (
-    <div className="card flex items-center gap-3 px-4 py-3">
-      <div className="flex h-8 w-8 items-center justify-center rounded" style={{ backgroundColor: C.surfaceHigh, color: isHealthy ? C.secondary : C.error }}>
+    <div className="flex items-center gap-3 rounded-sharp border border-ledger-outline-variant bg-ledger-surface-low px-4 py-3">
+      <div className={`flex h-8 w-8 items-center justify-center rounded-sharp bg-ledger-surface-high ${isHealthy ? 'text-ledger-secondary' : 'text-ledger-error'}`}>
         {icon}
       </div>
       <div className="flex-1">
-        <p className="text-sm font-medium" style={{ color: C.onSurface }}>{label}</p>
+        <p className="text-sm font-medium text-ledger-on-surface">{label}</p>
       </div>
       <StatusBadge status={status} />
     </div>
   )
 }
 
-function InfoCard({ label, value, accent }: { label: string; value: string; accent?: string }) {
+function InfoCard({ label, value, accentClass }: { label: string; value: string; accentClass?: string }) {
   return (
-    <div className="card px-4 py-3">
-      <p className="text-[11px] font-medium uppercase tracking-wider" style={{ color: C.outline }}>{label}</p>
-      <p className="font-headline text-lg font-bold mt-0.5" style={{ color: accent ?? C.onSurface }}>{value}</p>
+    <div className="rounded-sharp border border-ledger-outline-variant bg-ledger-surface-low px-4 py-3">
+      <p className="mono text-[10px] uppercase tracking-[0.12em] text-ledger-on-surface-variant">{label}</p>
+      <p className={`mt-0.5 font-headline text-lg font-semibold tabular-nums ${accentClass ?? 'text-ledger-on-surface'}`}>{value}</p>
     </div>
   )
 }
 
 function CustomBadge() {
   return (
-    <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold" style={{ backgroundColor: `${C.primary}15`, color: C.primary }}>
+    <span className="stamp text-ledger-primary bg-ledger-primary/[0.07]">
       custom
     </span>
   )
@@ -398,19 +381,19 @@ function CustomBadge() {
 function DangerRow({ icon, title, desc, action, last }: { icon: React.ReactNode; title: string; desc: string; action: string; last?: boolean }) {
   const [confirm, setConfirm] = useState(false)
   return (
-    <div className="flex items-center gap-4 px-5 py-3.5" style={last ? {} : { borderBottom: `1px solid ${C.surfaceHigh}` }}>
-      <div style={{ color: C.error }}>{icon}</div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium" style={{ color: C.onSurface }}>{title}</p>
-        <p className="text-xs" style={{ color: C.outline }}>{desc}</p>
+    <div className={`flex items-center gap-4 px-5 py-3.5 ${last ? '' : 'border-b border-ledger-error/20'}`}>
+      <div className="text-ledger-error">{icon}</div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-ledger-on-surface">{title}</p>
+        <p className="text-xs text-ledger-on-surface-variant">{desc}</p>
       </div>
       {confirm ? (
-        <div className="flex gap-2 shrink-0">
+        <div className="flex shrink-0 gap-2">
           <button className="btn-danger text-xs">Confirm</button>
           <button onClick={() => setConfirm(false)} className="btn-ghost text-xs">Cancel</button>
         </div>
       ) : (
-        <button onClick={() => setConfirm(true)} className="btn-danger text-xs shrink-0">{action}</button>
+        <button onClick={() => setConfirm(true)} className="btn-danger shrink-0 text-xs">{action}</button>
       )}
     </div>
   )

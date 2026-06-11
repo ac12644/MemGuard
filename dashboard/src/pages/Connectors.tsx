@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchConnectors, createConnector, deleteConnector, testConnector, syncConnector } from '../api/client'
+import PageHeader from '../components/PageHeader'
 import ErrorBanner from '../components/ErrorBanner'
 import { useToast } from '../components/Toast'
 import { Plug, RefreshCw, Zap, Plus, X, Trash2, Database } from 'lucide-react'
@@ -158,19 +159,17 @@ export default function Connectors() {
   )
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Header */}
-      <div className="flex items-end justify-between">
-        <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--color-on-surface)' }}>Connectors</h1>
-          <p className="mt-1 text-sm" style={{ color: 'var(--color-outline)' }}>Connect your memory systems to MemGuard</p>
-        </div>
-        {!showForm && (
+    <div className="space-y-6 animate-fade-in">
+      <PageHeader
+        no="07"
+        title="Connectors"
+        description="Registered memory systems under watch"
+        actions={!showForm ? (
           <button onClick={() => setShowForm(true)} className="btn-primary">
             <Plus size={14} /> Add Connector
           </button>
-        )}
-      </div>
+        ) : undefined}
+      />
 
       {connectorsQuery.isError && (
         <ErrorBanner message={(connectorsQuery.error as Error).message} onRetry={() => connectorsQuery.refetch()} />
@@ -179,21 +178,18 @@ export default function Connectors() {
       {/* Connector cards grid */}
       {isLoading ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {[...Array(3)].map((_, i) => <div key={i} className="shimmer h-48 rounded-xl" />)}
+          {[...Array(3)].map((_, i) => <div key={i} className="shimmer h-48" />)}
         </div>
       ) : !connectors?.length && !showForm ? (
         <div className="card flex h-56 items-center justify-center">
-          <div className="text-center max-w-xs">
-            <div
-              className="mx-auto flex h-14 w-14 items-center justify-center rounded-full"
-              style={{ backgroundColor: 'rgba(173, 198, 255, 0.08)' }}
-            >
-              <Plug size={28} style={{ color: 'var(--color-primary)' }} />
+          <div className="max-w-xs text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-ledger-outline-variant bg-ledger-primary/[0.06]">
+              <Plug size={28} className="text-ledger-primary" />
             </div>
-            <p className="mt-4 text-sm font-medium" style={{ color: 'var(--color-on-surface)' }}>
+            <p className="mt-4 text-sm font-medium text-ledger-on-surface">
               Connect your first memory system to start validating
             </p>
-            <p className="mt-1 text-xs" style={{ color: 'var(--color-outline)' }}>
+            <p className="mt-1 text-xs text-ledger-on-surface-variant">
               MemGuard supports Mem0, Zep, Letta, LangMem, and custom REST APIs.
             </p>
             <button onClick={() => setShowForm(true)} className="btn-primary mt-5">
@@ -209,49 +205,43 @@ export default function Connectors() {
               <div key={c.id} className="card flex flex-col justify-between p-5">
                 {/* Top section */}
                 <div>
-                  <div className="flex items-start justify-between mb-3">
+                  <div className="mb-3 flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div
-                        className="flex h-10 w-10 items-center justify-center rounded-lg"
-                        style={{ backgroundColor: 'rgba(173, 198, 255, 0.08)' }}
-                      >
-                        <Plug size={18} style={{ color: 'var(--color-primary)' }} />
+                      <div className="flex h-10 w-10 items-center justify-center rounded-sharp border border-ledger-outline-variant bg-ledger-primary/[0.06]">
+                        <Plug size={18} className="text-ledger-primary" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold" style={{ color: 'var(--color-on-surface)' }}>{c.name}</p>
-                        <span
-                          className="inline-block mt-0.5 rounded px-2 py-0.5 text-[11px] font-medium"
-                          style={{ backgroundColor: 'var(--color-surface-container-high)', color: 'var(--color-on-surface-variant)' }}
-                        >
+                        <p className="text-sm font-semibold text-ledger-on-surface">{c.name}</p>
+                        <span className="mono mt-0.5 inline-block rounded-sharp border border-ledger-outline-variant bg-ledger-surface-high px-2 py-0.5 text-[10px] uppercase tracking-[0.09em] text-ledger-on-surface-variant">
                           {meta.label}
                         </span>
                       </div>
                     </div>
-                    {/* Status dot */}
-                    <div className="flex items-center gap-1.5 mt-1">
-                      <span
-                        className="h-2 w-2 rounded-full"
-                        style={{ backgroundColor: c.is_active ? 'var(--color-secondary)' : 'var(--color-outline)' }}
-                      />
-                      <span className="text-xs" style={{ color: c.is_active ? 'var(--color-secondary)' : 'var(--color-outline)' }}>
-                        {c.is_active ? 'Active' : 'Inactive'}
-                      </span>
-                    </div>
+                    {/* Status stamp */}
+                    <span
+                      className={`stamp animate-stamp-in mt-1 ${
+                        c.is_active
+                          ? 'text-ledger-secondary bg-ledger-secondary/[0.07]'
+                          : 'text-ledger-on-surface-variant bg-ledger-surface-high'
+                      }`}
+                    >
+                      {c.is_active ? 'Active' : 'Inactive'}
+                    </span>
                   </div>
 
                   {/* Stats */}
-                  <div className="flex items-center gap-4 mt-4">
+                  <div className="mt-4 flex items-center gap-4">
                     {c.last_sync_at && (
                       <div className="flex items-center gap-1.5">
-                        <RefreshCw size={12} style={{ color: 'var(--color-outline)' }} />
-                        <span className="text-xs" style={{ color: 'var(--color-outline)' }}>
+                        <RefreshCw size={12} className="text-ledger-outline" />
+                        <span className="mono text-xs text-ledger-on-surface-variant">
                           {formatTimestamp(c.last_sync_at)}
                         </span>
                       </div>
                     )}
                     <div className="flex items-center gap-1.5">
-                      <Database size={12} style={{ color: (c.last_sync_at || syncedIds.has(c.id)) ? 'var(--color-secondary)' : 'var(--color-outline)' }} />
-                      <span className="text-xs" style={{ color: (c.last_sync_at || syncedIds.has(c.id)) ? 'var(--color-secondary)' : 'var(--color-outline)' }}>
+                      <Database size={12} className={(c.last_sync_at || syncedIds.has(c.id)) ? 'text-ledger-secondary' : 'text-ledger-outline'} />
+                      <span className={`text-xs ${(c.last_sync_at || syncedIds.has(c.id)) ? 'text-ledger-secondary' : 'text-ledger-on-surface-variant'}`}>
                         {syncedIds.has(c.id) ? 'Sync queued' : c.last_sync_at ? 'Synced' : 'Not synced'}
                       </span>
                     </div>
@@ -259,15 +249,12 @@ export default function Connectors() {
                 </div>
 
                 {/* Action buttons */}
-                <div
-                  className="grid grid-cols-3 gap-2 mt-5 pt-4"
-                  style={{ borderTop: '1px solid var(--ghost-border)' }}
-                >
+                <div className="mt-5 grid grid-cols-3 gap-2 border-t border-ledger-outline-variant pt-4">
                   <button
                     type="button"
                     onClick={(e) => { e.preventDefault(); test.mutate(c.id) }}
                     disabled={activeAction?.id === c.id}
-                    className="btn-ghost text-xs justify-center"
+                    className="btn-ghost justify-center text-xs"
                   >
                     {activeAction?.id === c.id && activeAction.action === 'test'
                       ? <><span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" /> Testing...</>
@@ -277,7 +264,7 @@ export default function Connectors() {
                     type="button"
                     onClick={(e) => { e.preventDefault(); sync.mutate(c.id) }}
                     disabled={activeAction?.id === c.id}
-                    className="btn-ghost text-xs justify-center"
+                    className="btn-ghost justify-center text-xs"
                   >
                     {activeAction?.id === c.id && activeAction.action === 'sync'
                       ? <><RefreshCw size={13} className="animate-spin" /> Syncing...</>
@@ -287,8 +274,7 @@ export default function Connectors() {
                     type="button"
                     onClick={(e) => { e.preventDefault(); if (confirm('Delete this connector?')) remove.mutate(c.id) }}
                     disabled={activeAction?.id === c.id}
-                    className="btn-ghost text-xs justify-center"
-                    style={{ color: 'var(--color-error)' }}
+                    className="btn-ghost justify-center text-xs text-ledger-error hover:text-ledger-error"
                   >
                     <Trash2 size={13} />
                   </button>
@@ -302,13 +288,13 @@ export default function Connectors() {
       {/* Creation form panel */}
       {showForm && (
         <div className="card animate-slide-up">
-          <div className="card-header flex items-center justify-between">
+          <div className="card-header justify-between">
             <span>New Connector</span>
-            <button onClick={() => { setShowForm(false); setForm({ ...EMPTY_FORM }) }} className="transition-colors" style={{ color: 'var(--color-outline)' }}>
+            <button onClick={() => { setShowForm(false); setForm({ ...EMPTY_FORM }) }} className="text-ledger-outline transition-colors hover:text-ledger-on-surface">
               <X size={16} />
             </button>
           </div>
-          <div className="p-5 space-y-5">
+          <div className="space-y-5 p-5">
             {/* Type selector */}
             <fieldset disabled={create.isPending} className="space-y-5">
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
@@ -322,14 +308,14 @@ export default function Connectors() {
                 <button
                   key={type}
                   onClick={() => set('connector_type', type)}
-                  className="rounded p-4 text-left transition-all"
-                  style={form.connector_type === type
-                    ? { backgroundColor: 'rgba(173, 198, 255, 0.08)', boxShadow: 'inset 0 0 0 1px var(--color-primary)' }
-                    : { backgroundColor: 'var(--color-surface-container-high)' }
-                  }
+                  className={`rounded-sharp border p-4 text-left transition-all ${
+                    form.connector_type === type
+                      ? 'border-ledger-primary bg-ledger-primary/[0.06] shadow-[inset_0_0_0_1px_#23408e]'
+                      : 'border-ledger-outline-variant bg-ledger-surface-low hover:border-ledger-outline'
+                  }`}
                 >
-                  <p className="text-sm font-semibold" style={{ color: 'var(--color-on-surface)' }}>{label}</p>
-                  <p className="mt-0.5 text-xs" style={{ color: 'var(--color-outline)' }}>{desc}</p>
+                  <p className="text-sm font-semibold text-ledger-on-surface">{label}</p>
+                  <p className="mt-0.5 text-xs text-ledger-on-surface-variant">{desc}</p>
                 </button>
               ))}
             </div>
@@ -373,9 +359,9 @@ export default function Connectors() {
                 <Field label="Base URL" hint="Leave blank for Zep Cloud">
                   <input value={form.zep_base_url} onChange={(e) => set('zep_base_url', e.target.value)} placeholder="https://api.getzep.com/api/v2 (default)" className="input-field w-full font-mono text-xs" />
                 </Field>
-                <div className="rounded px-4 py-3" style={{ backgroundColor: 'var(--color-surface-container-high)' }}>
-                  <p className="text-xs" style={{ color: 'var(--color-outline)' }}>Zep stores memories as a knowledge graph. MemGuard will fetch <span style={{ color: 'var(--color-primary)' }} className="font-medium">graph edges</span> (facts) and <span style={{ color: 'var(--color-primary)' }} className="font-medium">threads</span> for validation. Writeback is not supported -- trust scores are tracked in MemGuard only.</p>
-                </div>
+                <InfoNote>
+                  Zep stores memories as a knowledge graph. MemGuard will fetch <Em>graph edges</Em> (facts) and <Em>threads</Em> for validation. Writeback is not supported -- trust scores are tracked in MemGuard only.
+                </InfoNote>
               </>
             )}
 
@@ -396,9 +382,9 @@ export default function Connectors() {
                 <Field label="Base URL" hint="Leave blank for LangSmith hosted">
                   <input value={form.langmem_base_url} onChange={(e) => set('langmem_base_url', e.target.value)} placeholder="https://api.smith.langchain.com (default)" className="input-field w-full font-mono text-xs" />
                 </Field>
-                <div className="rounded px-4 py-3" style={{ backgroundColor: 'var(--color-surface-container-high)' }}>
-                  <p className="text-xs" style={{ color: 'var(--color-outline)' }}>LangMem uses LangGraph's Store layer. Memories are <span style={{ color: 'var(--color-primary)' }} className="font-medium">namespaced items</span> with key-value pairs. MemGuard fetches via the Store REST API and can write trust scores back into item values.</p>
-                </div>
+                <InfoNote>
+                  LangMem uses LangGraph's Store layer. Memories are <Em>namespaced items</Em> with key-value pairs. MemGuard fetches via the Store REST API and can write trust scores back into item values.
+                </InfoNote>
               </>
             )}
 
@@ -416,9 +402,9 @@ export default function Connectors() {
                     <input value={form.letta_base_url} onChange={(e) => set('letta_base_url', e.target.value)} placeholder="https://api.letta.com/v1 (default)" className="input-field w-full font-mono text-xs" />
                   </Field>
                 </div>
-                <div className="rounded px-4 py-3" style={{ backgroundColor: 'var(--color-surface-container-high)' }}>
-                  <p className="text-xs" style={{ color: 'var(--color-outline)' }}>Letta organizes memory per-agent. MemGuard fetches <span style={{ color: 'var(--color-primary)' }} className="font-medium">core memory blocks</span> (persona, human, custom) and <span style={{ color: 'var(--color-primary)' }} className="font-medium">archival passages</span> (long-term vector store). Core memory blocks support writeback.</p>
-                </div>
+                <InfoNote>
+                  Letta organizes memory per-agent. MemGuard fetches <Em>core memory blocks</Em> (persona, human, custom) and <Em>archival passages</Em> (long-term vector store). Core memory blocks support writeback.
+                </InfoNote>
               </>
             )}
 
@@ -436,7 +422,7 @@ export default function Connectors() {
                     <input value={form.auth_value} onChange={(e) => set('auth_value', e.target.value)} type="password" placeholder="Bearer ..." className="input-field w-full font-mono" />
                   </Field>
                 </div>
-                <p className="text-[11px] font-semibold uppercase tracking-wider pt-2" style={{ color: 'var(--color-outline)' }}>Endpoint Configuration</p>
+                <p className="mono pt-2 text-[10px] uppercase tracking-[0.12em] text-ledger-on-surface-variant">Endpoint Configuration</p>
                 <div className="grid grid-cols-2 gap-4">
                   <Field label="List Path" hint="GET endpoint for listing memories">
                     <input value={form.list_path} onChange={(e) => set('list_path', e.target.value)} placeholder="/memories" className="input-field w-full font-mono text-xs" />
@@ -457,9 +443,9 @@ export default function Connectors() {
             </fieldset>
 
             {/* Actions */}
-            <div className="flex items-center justify-end gap-3 pt-4" style={{ borderTop: '1px solid var(--ghost-border)' }}>
+            <div className="flex items-center justify-end gap-3 border-t border-ledger-outline-variant pt-4">
               {create.error && (
-                <span className="mr-auto text-xs" style={{ color: 'var(--color-error)' }}>{(create.error as Error).message}</span>
+                <span className="mr-auto text-xs text-ledger-error">{(create.error as Error).message}</span>
               )}
               <button onClick={() => { setShowForm(false); setForm({ ...EMPTY_FORM }) }} className="btn-secondary">
                 Cancel
@@ -478,12 +464,24 @@ export default function Connectors() {
 function Field({ label, hint, required, children }: { label: string; hint?: string; required?: boolean; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="text-xs font-medium" style={{ color: 'var(--color-on-surface-variant)' }}>
+      <span className="text-xs font-medium text-ledger-on-surface-variant">
         {label}
-        {required && <span className="ml-0.5" style={{ color: 'var(--color-error)' }}>*</span>}
+        {required && <span className="ml-0.5 text-ledger-error">*</span>}
       </span>
-      {hint && <span className="ml-2 text-[11px]" style={{ color: 'var(--color-outline)' }}>{hint}</span>}
+      {hint && <span className="ml-2 text-[11px] text-ledger-outline">{hint}</span>}
       <div className="mt-1.5">{children}</div>
     </label>
   )
+}
+
+function InfoNote({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="rounded-sharp border border-ledger-outline-variant bg-ledger-surface-low px-4 py-3">
+      <p className="text-xs text-ledger-on-surface-variant">{children}</p>
+    </div>
+  )
+}
+
+function Em({ children }: { children: React.ReactNode }) {
+  return <span className="font-medium text-ledger-primary">{children}</span>
 }
