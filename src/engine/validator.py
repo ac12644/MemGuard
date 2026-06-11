@@ -7,10 +7,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import settings
 from src.engine.fact_classifier import classify_fact_type, get_fact_type_volatility
+from src.engine.strategies.semantic_drift import validate_semantic_drift
 from src.engine.strategies.source_linked import validate_source_linked
+from src.engine.strategies.temporal_pattern import validate_temporal_pattern
 from src.engine.trust_calculator import calculate_trust_score
 from src.models.memory_record import MemoryRecord
 from src.models.quarantine_entry import QuarantineEntry
+from src.models.staleness_pattern import StalenessPattern
 from src.models.validation_job import ValidationJob
 from src.models.validation_result import ValidationResult
 
@@ -44,7 +47,12 @@ async def run_validation_job(job_id: uuid.UUID, db: AsyncSession) -> None:
 
         for memory in memories:
             try:
-                evidence = await _validate_memory(memory, job.job_type)
+                # Classify fact type if not set (temporal_pattern needs it pre-validation)
+                if not memory.fact_type:
+                    fact_type, _ = classify_fact_type(memory.content)
+                    memory.fact_type = fact_type
+
+                evidence = await _validate_memory(memory, job.job_type, db)
                 outcome = evidence["outcome"]
                 previous_trust = memory.trust_score
 
@@ -54,19 +62,16 @@ async def run_validation_job(job_id: uuid.UUID, db: AsyncSession) -> None:
                 memory.last_validated_at = datetime.now(UTC)
                 memory.validation_count += 1
 
-                # Classify fact type if not set
-                if not memory.fact_type:
-                    fact_type, _ = classify_fact_type(memory.content)
-                    memory.fact_type = fact_type
-
-                # Auto-quarantine if below threshold
-                if new_trust < settings.memguard_quarantine_threshold and outcome in ("flagged",):
+                # Auto-quarantine on direct contradiction or when trust falls below threshold
+                if outcome == "quarantined" or (
+                    new_trust < settings.memguard_quarantine_threshold and outcome == "flagged"
+                ):
                     memory.status = "quarantined"
                     outcome = "quarantined"
                     db.add(QuarantineEntry(
                         memory_id=memory.id,
                         tenant_id=memory.tenant_id,
-                        reason="stale" if evidence.get("drift_detected") else "contradicted",
+                        reason=_quarantine_reason(evidence),
                         original_content=memory.content,
                         original_trust_score=previous_trust,
                     ))
@@ -116,7 +121,7 @@ async def run_validation_job(job_id: uuid.UUID, db: AsyncSession) -> None:
     await db.flush()
 
 
-async def _validate_memory(memory: MemoryRecord, strategy: str) -> dict:
+async def _validate_memory(memory: MemoryRecord, strategy: str, db: AsyncSession) -> dict:
     """Run the specified validation strategy on a single memory."""
     if strategy == "source_linked":
         source_url = (memory.source_metadata or {}).get("source_url")
@@ -133,13 +138,82 @@ async def _validate_memory(memory: MemoryRecord, strategy: str) -> dict:
             source_url=source_url,
             source_field=source_field,
         )
-    # Other strategies will be added in Phase 7
+    if strategy == "semantic_drift":
+        recent_context = await _fetch_recent_context(memory, db)
+        return await validate_semantic_drift(
+            memory_content=memory.content,
+            memory_created_at=memory.created_at,
+            recent_context=recent_context,
+        )
+    if strategy == "temporal_pattern":
+        pattern = await _fetch_staleness_pattern(memory, db)
+        return await validate_temporal_pattern(
+            memory_content=memory.content,
+            memory_created_at=memory.created_at,
+            fact_type=memory.fact_type,
+            learned_avg_staleness_days=pattern.avg_staleness_days if pattern else None,
+            learned_sample_size=pattern.sample_size if pattern else 0,
+            last_validated_at=memory.last_validated_at,
+        )
+    # Remaining strategies (cross_reference, causal_chain) will be added in Phase 7
     return {
         "outcome": "error",
         "reasoning": f"Strategy '{strategy}' not yet implemented",
         "confidence": 0.0,
         "drift_detected": False,
     }
+
+
+async def _fetch_recent_context(
+    memory: MemoryRecord, db: AsyncSession, limit: int = 10
+) -> list[str]:
+    """Gather recent memories from the same tenant/connector as drift context.
+
+    Connectors don't expose raw conversation history, so the most recently
+    created sibling memories serve as the proxy for recent agent context.
+    """
+    query = (
+        select(MemoryRecord.content)
+        .where(
+            MemoryRecord.tenant_id == memory.tenant_id,
+            MemoryRecord.connector_id == memory.connector_id,
+            MemoryRecord.id != memory.id,
+            MemoryRecord.status.in_(["active", "flagged"]),
+            MemoryRecord.created_at > memory.created_at,
+        )
+        .order_by(MemoryRecord.created_at.desc())
+        .limit(limit)
+    )
+    result = await db.execute(query)
+    return list(result.scalars().all())
+
+
+async def _fetch_staleness_pattern(
+    memory: MemoryRecord, db: AsyncSession
+) -> StalenessPattern | None:
+    """Look up the learned staleness pattern for this memory's fact type."""
+    if not memory.fact_type:
+        return None
+    result = await db.execute(
+        select(StalenessPattern).where(
+            StalenessPattern.tenant_id == memory.tenant_id,
+            StalenessPattern.fact_type == memory.fact_type,
+        )
+    )
+    return result.scalar_one_or_none()
+
+
+def _quarantine_reason(evidence: dict) -> str:
+    """Map validation evidence to a quarantine reason."""
+    if evidence.get("contradicted"):
+        return "contradicted"
+    if (
+        evidence.get("drift_detected")
+        or evidence.get("likely_stale")
+        or evidence.get("staleness_probability", 0.0) > 0.7
+    ):
+        return "stale"
+    return "contradicted"
 
 
 def _compute_new_trust(memory: MemoryRecord, evidence: dict) -> float:
@@ -158,9 +232,18 @@ def _compute_new_trust(memory: MemoryRecord, evidence: dict) -> float:
             historical_accuracy=min(1.0, (memory.trust_score + confidence) / 2),
             retrieval_frequency=min(1.0, memory.retrieval_count / 100),
         )
+    elif outcome == "quarantined":
+        # Direct contradiction: drop trust hard, below the quarantine threshold
+        penalized = memory.trust_score - 0.5 * confidence
+        return max(0.0, min(penalized, settings.memguard_quarantine_threshold - 0.05))
     elif outcome == "flagged":
         # Decrease trust significantly
-        drift_penalty = 0.3 if evidence.get("drift_detected") else 0.15
+        drift_detected = (
+            evidence.get("drift_detected")
+            or evidence.get("likely_stale")
+            or evidence.get("staleness_probability", 0.0) > 0.7
+        )
+        drift_penalty = 0.3 if drift_detected else 0.15
         return max(0.0, memory.trust_score - drift_penalty * confidence)
     elif outcome == "source_unavailable":
         # Slight decrease
